@@ -7,162 +7,47 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Category {
+  id            Int           @id @default(autoincrement())
+  name          String        @unique
+  subcategories Subcategory[]
+}
+
+model Subcategory {
+  id         Int       @id @default(autoincrement())
+  name       String
+  category   Category  @relation(fields: [categoryId], references: [id])
+  categoryId Int
+  products   Product[]
+
+  @@unique([name, categoryId])
+}
+
+model Product {
+  id            Int         @id @default(autoincrement())
+  name          String
+  price         Float
+  stock         Int         @default(0)
+  description   String?
+  image         String?
+  createdAt     DateTime    @default(now())
+  subcategory   Subcategory @relation(fields: [subcategoryId], references: [id])
+  subcategoryId Int
+  user          User        @relation("UserProducts", fields: [userId], references: [id])
+  userId        Int
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  role      Role      @default(BUYER)
+  createdAt DateTime  @default(now())
+  products  Product[] @relation("UserProducts")
+}
+
 enum Role {
   BUYER
   SELLER
   ADMIN
-}
-
-enum OrderStatus {
-  PENDING
-  SHIPPED
-  DELIVERED
-  CANCELLED
-}
-
-enum PaymentStatus {
-  PENDING
-  COMPLETED
-  FAILED
-}
-
-enum PaymentMethod {
-  CARD
-  PAYPAL
-}
-
-enum DiscountType {
-  PERCENTAGE
-  FIXED
-}
-
-model User {
-  id        Int        @id @default(autoincrement())
-  email     String     @unique
-  password  String
-  role      Role       @default(BUYER)
-  createdAt DateTime   @default(now())
-  products  Product[]  @relation("UserProducts")
-  orders    Order[]
-  cart      CartItem[]
-  reviews   Review[]
-  wishlist  Wishlist[]
-  addresses Address[]
-}
-
-model Address {
-  id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
-  street    String
-  city      String
-  state     String
-  zip       String
-  country   String
-  isDefault Boolean  @default(false)
-  createdAt DateTime @default(now())
-  orders    Order[]
-}
-
-model Product {
-  id        Int               @id @default(autoincrement())
-  name      String
-  price     Float
-  stock     Int               @default(0)
-  description String?
-  image     String?
-  seller    User              @relation("UserProducts", fields: [sellerId], references: [id])
-  sellerId  Int
-  createdAt DateTime          @default(now())
-  categories ProductCategory[]
-  cartItems  CartItem[]
-  reviews    Review[]
-  wishlist   Wishlist[]
-  orderItems OrderItem[]
-}
-
-model Category {
-  id        Int               @id @default(autoincrement())
-  name      String            @unique
-  slug      String            @unique
-  products  ProductCategory[]
-}
-
-model ProductCategory {
-  product     Product  @relation(fields: [productId], references: [id])
-  productId   Int
-  category    Category @relation(fields: [categoryId], references: [id])
-  categoryId  Int
-
-  @@id([productId, categoryId])
-}
-
-model CartItem {
-  id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
-  product   Product  @relation(fields: [productId], references: [id])
-  productId Int
-  quantity  Int      @default(1)
-
-  @@unique([userId, productId])
-}
-
-model Wishlist {
-  id        Int      @id @default(autoincrement())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
-  product   Product  @relation(fields: [productId], references: [id])
-  productId Int
-  createdAt DateTime @default(now())
-
-  @@unique([userId, productId])
-}
-
-model Order {
-  id             Int           @id @default(autoincrement())
-  buyer          User          @relation(fields: [buyerId], references: [id])
-  buyerId        Int
-  total          Float
-  status         OrderStatus   @default(PENDING)
-  paymentStatus  PaymentStatus @default(PENDING)
-  paymentMethod  PaymentMethod
-  address        Address       @relation(fields: [addressId], references: [id])
-  addressId      Int
-  createdAt      DateTime      @default(now())
-  items          OrderItem[]
-  discount       Discount?     @relation(fields: [discountId], references: [id])
-  discountId     Int?
-}
-
-model OrderItem {
-  id        Int      @id @default(autoincrement())
-  order     Order    @relation(fields: [orderId], references: [id])
-  orderId   Int
-  product   Product  @relation(fields: [productId], references: [id])
-  productId Int
-  quantity  Int
-  price     Float
-}
-
-model Discount {
-  id        Int          @id @default(autoincrement())
-  code      String       @unique
-  type      DiscountType
-  value     Float
-  isActive  Boolean      @default(true)
-  startDate DateTime?
-  endDate   DateTime?
-  orders    Order[]
-}
-
-model Review {
-  id        Int      @id @default(autoincrement())
-  product   Product  @relation(fields: [productId], references: [id])
-  productId Int
-  user      User     @relation(fields: [userId], references: [id])
-  userId    Int
-  rating    Int
-  comment   String?
-  createdAt DateTime @default(now())
 }

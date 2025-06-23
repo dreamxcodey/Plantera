@@ -1,7 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
 import HomeHero from "../components/homehero";
 import Navbar from "../components/navbar";
 import PlantSection from "../components/plantsection";
@@ -15,9 +13,7 @@ export default function Home() {
       <Navbar />
 
       <HomeHero />
-<PlantSection/>
-
-
+      <PlantSection />
       {/* Benefits Section */}
       <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
@@ -113,7 +109,7 @@ export default function Home() {
         </div>
       </section>
 
-   <Testimonials/>
+      <Testimonials />
       {/* Newsletter */}
       <section className="py-16 bg-emerald-600">
         <div className="container mx-auto px-4">
