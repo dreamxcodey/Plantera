@@ -1,227 +1,148 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Category } from "@prisma/client";
+import { useEffect, useState } from 'react';
 
-export default function AddPlant() {
-  const router = useRouter();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState<number[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+export default function AddProductForm() {
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedSubcategory, setSelectedSubcategory] = useState('');
 
-  const [form, setForm] = useState({
-    name: "",
-    price: "",
-    stock: "",
-    description: "",
-    image: "",
-  });
+  const [name, setName] = useState('');
+  const [price, setPrice] = useState('');
+  const [stock, setStock] = useState('');
+  const [description, setDescription] = useState('');
+  const [image, setImage] = useState('');
+  const [tags, setTags] = useState('');
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch("/api/categories");
-        const data = await res.json();
-        setCategories(data);
-      } catch (err) {
-        console.error("Failed to fetch categories:", err);
-      }
-    };
-    fetchCategories();
+    fetch('/api/categories')
+      .then((res) => res.json())
+      .then((data) => setCategories(data));
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  useEffect(() => {
+    if (selectedCategory) {
+      fetch(`/api/categories/${selectedCategory}/subcategories`)
+        .then((res) => res.json())
+        .then((data) => setSubcategories(data));
+    }
+  }, [selectedCategory]);
+
+  const createCategory = async () => {
+    const name = prompt('Enter new category name');
+    if (!name) return;
+    const res = await fetch('/api/categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    const newCat = await res.json();
+    setCategories([...categories, newCat]);
+    setSelectedCategory(newCat.id);
   };
 
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const options = Array.from(e.target.selectedOptions);
-    const selectedIds = options.map(option => parseInt(option.value));
-    setSelectedCategoryIds(selectedIds);
+  const createSubcategory = async () => {
+    const name = prompt('Enter new subcategory name');
+    if (!name || !selectedCategory) return;
+    const res = await fetch('/api/subcategories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, categoryId: selectedCategory }),
+    });
+    const newSub = await res.json();
+    setSubcategories([...subcategories, newSub]);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-
-    // Basic validation
-    if (selectedCategoryIds.length === 0) {
-      setError("Please select at least one category");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const productData = {
-        ...form,
-        categories: selectedCategoryIds
-      };
-
-      const res = await fetch("/api/products", {
-        method: "POST",
-        body: JSON.stringify(productData),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (res.ok) {
-        router.push("/products");
-      } else {
-        const errorData = await res.json();
-        setError(errorData.message || "Failed to create product");
-      }
-    } catch (err) {
-      setError("Network error. Please try again.");
-      console.error("Submission error:", err);
-    } finally {
-      setLoading(false);
-    }
+  const createProduct = async () => {
+    const res = await fetch('/api/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        price: parseFloat(price),
+        stock: parseInt(stock),
+        description,
+        image,
+        tags: tags.split(',').map((t) => t.trim()),
+        categoryId: parseInt(selectedCategory),
+        subcategoryId: parseInt(selectedSubcategory),
+        userId: 1,
+      }),
+    });
+    const result = await res.json();
+    console.log('Product created:', result);
   };
-
-  // Group categories by type
-  const categoryGroups: { [key: string]: Category[] } = {};
-  categories.forEach(category => {
-    const group = category.name.split(":")[0] || "Other";
-    if (!categoryGroups[group]) {
-      categoryGroups[group] = [];
-    }
-    categoryGroups[group].push(category);
-  });
 
   return (
-    <div className="max-w-3xl mx-auto mt-10 p-6 bg-white rounded-lg shadow">
-      <h1 className="text-3xl font-bold mb-6 text-green-700">Add New Plant</h1>
+    <div className="max-w-xl mx-auto p-6">
+      <h2 className="text-2xl font-bold mb-4">Add Product</h2>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
-          {error}
-        </div>
-      )}
+      <label className="block mb-1">Category</label>
+      <div className="flex gap-2 mb-4">
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="border px-3 py-2 rounded w-full"
+        >
+          <option value="">Select Category</option>
+          {categories.map((cat: any) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
+          ))}
+        </select>
+        <button
+          onClick={createCategory}
+          className="bg-green-600 text-white px-2 py-1 rounded"
+        >
+          +
+        </button>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block mb-2 font-medium text-gray-700">
-              Plant Name*
-            </label>
-            <input
-              type="text"
-              name="name"
-              placeholder="e.g., Snake Plant, Money Tree"
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
-              onChange={handleChange}
-              required
-            />
-          </div>
+      <label className="block mb-1">Subcategory</label>
+      <div className="flex gap-2 mb-4">
+        <select
+          value={selectedSubcategory}
+          onChange={(e) => setSelectedSubcategory(e.target.value)}
+          className="border px-3 py-2 rounded w-full"
+        >
+          <option value="">Select Subcategory</option>
+          {subcategories.map((sub: any) => (
+            <option key={sub.id} value={sub.id}>
+              {sub.name}
+            </option>
+          ))}
+        </select>
+        <button
+          onClick={createSubcategory}
+          className="bg-green-600 text-white px-2 py-1 rounded"
+        >
+          +
+        </button>
+      </div>
 
-          <div>
-            <label className="block mb-2 font-medium text-gray-700">
-              Price (₹)*
-            </label>
-            <input
-              type="number"
-              name="price"
-              placeholder="0.00"
-              min="0.01"
-              step="0.01"
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
-              onChange={handleChange}
-              required
-            />
-          </div>
+      <label className="block mb-1">Product Name</label>
+      <input type="text" className="border px-3 py-2 rounded w-full mb-4" value={name} onChange={(e) => setName(e.target.value)} />
 
-          <div>
-            <label className="block mb-2 font-medium text-gray-700">
-              Stock Quantity
-            </label>
-            <input
-              type="number"
-              name="stock"
-              placeholder="0"
-              min="0"
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
-              onChange={handleChange}
-            />
-          </div>
+      <label className="block mb-1">Price (₹)</label>
+      <input type="number" className="border px-3 py-2 rounded w-full mb-4" value={price} onChange={(e) => setPrice(e.target.value)} />
 
-          <div>
-            <label className="block mb-2 font-medium text-gray-700">
-              Image URL
-            </label>
-            <input
-              type="text"
-              name="image"
-              placeholder="https://example.com/plant-image.jpg"
-              className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
-              onChange={handleChange}
-            />
-          </div>
-        </div>
+      <label className="block mb-1">Stock</label>
+      <input type="number" className="border px-3 py-2 rounded w-full mb-4" value={stock} onChange={(e) => setStock(e.target.value)} />
 
-        <div>
-          <label className="block mb-2 font-medium text-gray-700">
-            Description
-          </label>
-          <textarea
-            name="description"
-            placeholder="Describe the plant, its care instructions, benefits..."
-            rows={4}
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
-            onChange={handleChange}
-          />
-        </div>
+      <label className="block mb-1">Description</label>
+      <textarea className="border px-3 py-2 rounded w-full mb-4" value={description} onChange={(e) => setDescription(e.target.value)} />
 
-        <div>
-          <label className="block mb-2 font-medium text-gray-700">
-            Categories*
-          </label>
-          <select
-            multiple
-            size={8}
-            value={selectedCategoryIds.map(String)}
-            onChange={handleCategoryChange}
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
-            required
-          >
-            {Object.entries(categoryGroups).map(([group, groupCategories]) => (
-              <optgroup key={group} label={group}>
-                {groupCategories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
-          <p className="text-sm text-gray-500 mt-2">
-            Hold Ctrl/Cmd to select multiple categories
-          </p>
-        </div>
+      <label className="block mb-1">Image URL</label>
+      <input type="text" className="border px-3 py-2 rounded w-full mb-4" value={image} onChange={(e) => setImage(e.target.value)} />
 
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="mr-3 px-6 py-2 border rounded-lg text-gray-700 hover:bg-gray-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className={`px-6 py-2 rounded-lg text-white ${loading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-700"
-              }`}
-          >
-            {loading ? "Creating..." : "Add Plant"}
-          </button>
-        </div>
-      </form>
+      <label className="block mb-1">Tags (comma-separated)</label>
+      <input type="text" className="border px-3 py-2 rounded w-full mb-6" value={tags} onChange={(e) => setTags(e.target.value)} />
+
+      <button onClick={createProduct} className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800 w-full">
+        Submit Product
+      </button>
     </div>
   );
 }

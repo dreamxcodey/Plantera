@@ -10,13 +10,16 @@ datasource db {
 model Category {
   id            Int           @id @default(autoincrement())
   name          String        @unique
+  slug          String        @unique
   subcategories Subcategory[]
+  products      Product[]
 }
 
 model Subcategory {
   id         Int       @id @default(autoincrement())
   name       String
   category   Category  @relation(fields: [categoryId], references: [id])
+  slug       String    @unique
   categoryId Int
   products   Product[]
 
@@ -31,8 +34,12 @@ model Product {
   description   String?
   image         String?
   createdAt     DateTime    @default(now())
+  tags          String[]
+  slug          String      @unique
   subcategory   Subcategory @relation(fields: [subcategoryId], references: [id])
   subcategoryId Int
+  category      Category    @relation(fields: [categoryId], references: [id])
+  categoryId    Int
   user          User        @relation("UserProducts", fields: [userId], references: [id])
   userId        Int
 }

@@ -15,3 +15,26 @@ export async function GET() {
     )
   }
 }
+
+
+export async function POST(req: Request) {
+
+  try {
+    const body = await req.json();
+
+
+    const { name } = body;
+
+    const slug = name.toLowerCase.replace(/\s+/g, '-');
+
+    const newCategory = await prisma.category.create({
+      data: {
+        name, slug,
+      }
+    })
+    return NextResponse.json(newCategory)
+  } catch (e) {
+    console.log(e)
+    return NextResponse.json('Error while creating new Category')
+  }
+}
