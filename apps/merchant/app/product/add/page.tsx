@@ -2,147 +2,378 @@
 
 import { useEffect, useState } from 'react';
 
-export default function AddProductForm() {
+export default function AddPlant() {
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedSubcategory, setSelectedSubcategory] = useState('');
+  const [allTags, setAllTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
-  const [stock, setStock] = useState('');
-  const [description, setDescription] = useState('');
-  const [image, setImage] = useState('');
-  const [tags, setTags] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    price: '',
+    stock: '0',
+    description: '',
+    image: '',
+    categoryId: '',
+    subcategoryId: '',
+    newCategory: '',
+    newSubcategory: '',
+    userId: '1',
+  });
 
   useEffect(() => {
     fetch('/api/categories')
-      .then((res) => res.json())
-      .then((data) => setCategories(data));
+      .then(res => res.json())
+      .then(setCategories)
+      .catch(() => setErrors({ fetch: 'Failed to load categories' }));
+
+    fetch('/api/tags')
+      .then(res => res.json())
+      .then(setAllTags)
+      .catch(() => setErrors({ fetch: 'Failed to load tags' }));
   }, []);
 
   useEffect(() => {
-    if (selectedCategory) {
-      fetch(`/api/categories/${selectedCategory}/subcategories`)
-        .then((res) => res.json())
-        .then((data) => setSubcategories(data));
+    if (formData.categoryId) {
+      fetch(`/api/categories/${formData.categoryId}/subcategories`)
+        .then(res => res.json())
+        .then(setSubcategories)
+        .catch(() => setErrors({ fetch: 'Failed to load subcategories' }));
+    } else {
+      setSubcategories([]);
     }
-  }, [selectedCategory]);
+  }, [formData.categoryId]);
 
-  const createCategory = async () => {
-    const name = prompt('Enter new category name');
-    if (!name) return;
-    const res = await fetch('/api/categories', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name }),
-    });
-    const newCat = await res.json();
-    setCategories([...categories, newCat]);
-    setSelectedCategory(newCat.id);
+  const handleChange = (e: any) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
   };
 
-  const createSubcategory = async () => {
-    const name = prompt('Enter new subcategory name');
-    if (!name || !selectedCategory) return;
-    const res = await fetch('/api/subcategories', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, categoryId: selectedCategory }),
-    });
-    const newSub = await res.json();
-    setSubcategories([...subcategories, newSub]);
+  const toggleTag = (tag: string) => {
+    setSelectedTags(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
   };
 
-  const createProduct = async () => {
-    const res = await fetch('/api/products', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name,
-        price: parseFloat(price),
-        stock: parseInt(stock),
-        description,
-        image,
-        tags: tags.split(',').map((t) => t.trim()),
-        categoryId: parseInt(selectedCategory),
-        subcategoryId: parseInt(selectedSubcategory),
-        userId: 1,
-      }),
-    });
-    const result = await res.json();
-    console.log('Product created:', result);
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.name.trim()) newErrors.name = 'Plant name is required';
+    if (!formData.price) newErrors.price = 'Price is required';
+    if (Number(formData.price) <= 0) newErrors.price = 'Price must be greater than 0';
+    if (Number(formData.stock) < 0) newErrors.stock = 'Stock cannot be negative';
+    if (!formData.categoryId && !formData.newCategory.trim()) newErrors.category = 'Category is required';
+    if (formData.image && !/^https?:\/\/.+\.(jpg|jpeg|png|webp)$/.test(formData.image)) {
+      newErrors.image = 'Invalid image URL format';
+    }
+
+    return newErrors;
+  };
+
+  const handleSubmit = async (e: any) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrors({});
+    setSuccessMessage('');
+
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      const payload = {
+        ...formData,
+        tags: selectedTags,
+      };
+
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to add plant');
+      }
+
+      setSuccessMessage('🌿 Plant added successfully!');
+      setFormData({
+        name: '',
+        price: '',
+        stock: '0',
+        description: '',
+        image: '',
+        categoryId: '',
+        subcategoryId: '',
+        newCategory: '',
+        newSubcategory: '',
+        userId: '1',
+      });
+      setSelectedTags([]);
+    } catch (error: any) {
+      setErrors({ submit: error.message || 'An unexpected error occurred' });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4">Add Product</h2>
-
-      <label className="block mb-1">Category</label>
-      <div className="flex gap-2 mb-4">
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="border px-3 py-2 rounded w-full"
-        >
-          <option value="">Select Category</option>
-          {categories.map((cat: any) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
-        <button
-          onClick={createCategory}
-          className="bg-green-600 text-white px-2 py-1 rounded"
-        >
-          +
-        </button>
+    <div className="max-w-2xl mx-auto mt-6 p-6 bg-amber-50 border border-green-200 rounded-xl shadow-lg">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-green-800 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" />
+          </svg>
+          Add New Plant
+        </h1>
+        <p className="text-green-600 mt-2">Grow your collection with a new green friend</p>
       </div>
 
-      <label className="block mb-1">Subcategory</label>
-      <div className="flex gap-2 mb-4">
-        <select
-          value={selectedSubcategory}
-          onChange={(e) => setSelectedSubcategory(e.target.value)}
-          className="border px-3 py-2 rounded w-full"
-        >
-          <option value="">Select Subcategory</option>
-          {subcategories.map((sub: any) => (
-            <option key={sub.id} value={sub.id}>
-              {sub.name}
-            </option>
-          ))}
-        </select>
+      {successMessage && (
+        <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+          </svg>
+          {successMessage}
+        </div>
+      )}
+
+      {errors.fetch && (
+        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+          {errors.fetch}
+        </div>
+      )}
+
+      {errors.submit && (
+        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+          </svg>
+          {errors.submit}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-green-700 font-medium mb-2 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Plant Name
+            </label>
+            <input
+              name="name"
+              placeholder="e.g., Monstera Deliciosa"
+              value={formData.name}
+              onChange={handleChange}
+              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${errors.name ? 'border-red-500 bg-red-50' : 'border-green-200'}`}
+            />
+            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+          </div>
+
+          <div>
+            <label className="block text-green-700 font-medium mb-2 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Price ($)
+            </label>
+            <input
+              name="price"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              value={formData.price}
+              onChange={handleChange}
+              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${errors.price ? 'border-red-500 bg-red-50' : 'border-green-200'}`}
+            />
+            {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
+          </div>
+
+          <div>
+            <label className="block text-green-700 font-medium mb-2 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+              </svg>
+              Stock Quantity
+            </label>
+            <input
+              name="stock"
+              type="number"
+              placeholder="0"
+              value={formData.stock}
+              onChange={handleChange}
+              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${errors.stock ? 'border-red-500 bg-red-50' : 'border-green-200'}`}
+            />
+            {errors.stock && <p className="text-red-500 text-sm mt-1">{errors.stock}</p>}
+          </div>
+
+          <div>
+            <label className="block text-green-700 font-medium mb-2 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              Image URL
+            </label>
+            <input
+              name="image"
+              placeholder="https://example.com/plant.jpg"
+              value={formData.image}
+              onChange={handleChange}
+              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${errors.image ? 'border-red-500 bg-red-50' : 'border-green-200'}`}
+            />
+            {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-green-700 font-medium mb-2">Description</label>
+          <textarea
+            name="description"
+            placeholder="Describe the plant's features, care instructions, etc."
+            value={formData.description}
+            onChange={handleChange}
+            className="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 min-h-[120px]"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-green-700 font-medium mb-2 flex items-center">
+              <svg xmlns="http://www.wwww3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+              </svg>
+              Category
+            </label>
+            <select
+              name="categoryId"
+              value={formData.categoryId}
+              onChange={handleChange}
+              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${errors.category ? 'border-red-500 bg-red-50' : 'border-green-200'}`}
+            >
+              <option value="">Select existing category</option>
+              {categories.map((cat: any) => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
+            </select>
+
+            <div className="mt-2">
+              <input
+                name="newCategory"
+                placeholder="Create new category"
+                value={formData.newCategory}
+                onChange={handleChange}
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${errors.category ? 'border-red-500 bg-red-50' : 'border-green-200'}`}
+              />
+            </div>
+            {errors.category && <p className="text-red-500 text-sm mt-1">{errors.category}</p>}
+          </div>
+
+          <div>
+            <label className="block text-green-700 font-medium mb-2 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              Subcategory
+            </label>
+            <select
+              name="subcategoryId"
+              value={formData.subcategoryId}
+              onChange={handleChange}
+              disabled={!formData.categoryId}
+              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${!formData.categoryId ? 'bg-gray-100' : ''} border-green-200`}
+            >
+              <option value="">Select existing subcategory</option>
+              {subcategories.map((sub: any) => (
+                <option key={sub.id} value={sub.id}>{sub.name}</option>
+              ))}
+            </select>
+
+            <div className="mt-2">
+              <input
+                name="newSubcategory"
+                placeholder="Create new subcategory"
+                value={formData.newSubcategory}
+                onChange={handleChange}
+                disabled={!formData.categoryId}
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${!formData.categoryId ? 'bg-gray-100' : ''} border-green-200`}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-green-700 font-medium mb-2 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
+            Plant Tags
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {allTags.map(tag => (
+              <button
+                type="button"
+                key={tag}
+                className={`px-3 py-1.5 rounded-full border transition-all flex items-center ${selectedTags.includes(tag)
+                  ? 'bg-green-600 text-white border-green-700'
+                  : 'bg-white text-green-800 border-green-300 hover:bg-green-100'}`}
+                onClick={() => toggleTag(tag)}
+              >
+                {selectedTags.includes(tag) && (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
+                {tag}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <button
-          onClick={createSubcategory}
-          className="bg-green-600 text-white px-2 py-1 rounded"
+          type="submit"
+          disabled={isSubmitting}
+          className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all flex items-center justify-center ${isSubmitting
+              ? 'bg-green-400 cursor-not-allowed'
+              : 'bg-green-700 hover:bg-green-800 hover:shadow-lg'
+            }`}
         >
-          +
+          {isSubmitting ? (
+            <>
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Adding Plant...
+            </>
+          ) : (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Add to Collection
+            </>
+          )}
         </button>
-      </div>
-
-      <label className="block mb-1">Product Name</label>
-      <input type="text" className="border px-3 py-2 rounded w-full mb-4" value={name} onChange={(e) => setName(e.target.value)} />
-
-      <label className="block mb-1">Price (₹)</label>
-      <input type="number" className="border px-3 py-2 rounded w-full mb-4" value={price} onChange={(e) => setPrice(e.target.value)} />
-
-      <label className="block mb-1">Stock</label>
-      <input type="number" className="border px-3 py-2 rounded w-full mb-4" value={stock} onChange={(e) => setStock(e.target.value)} />
-
-      <label className="block mb-1">Description</label>
-      <textarea className="border px-3 py-2 rounded w-full mb-4" value={description} onChange={(e) => setDescription(e.target.value)} />
-
-      <label className="block mb-1">Image URL</label>
-      <input type="text" className="border px-3 py-2 rounded w-full mb-4" value={image} onChange={(e) => setImage(e.target.value)} />
-
-      <label className="block mb-1">Tags (comma-separated)</label>
-      <input type="text" className="border px-3 py-2 rounded w-full mb-6" value={tags} onChange={(e) => setTags(e.target.value)} />
-
-      <button onClick={createProduct} className="bg-green-700 text-white px-4 py-2 rounded hover:bg-green-800 w-full">
-        Submit Product
-      </button>
+      </form>
     </div>
   );
 }

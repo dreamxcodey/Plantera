@@ -12,7 +12,7 @@ export default function Page() {
       <div className="mt-16 px-4 flex items-center justify-center">
         <button
           onClick={() => {
-            router.push("/plant");
+            router.push("/product/add");
           }}
           className="flex items-center px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
         >
