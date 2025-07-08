@@ -27,21 +27,56 @@ model Subcategory {
 }
 
 model Product {
-  id            Int         @id @default(autoincrement())
-  name          String
-  price         Float
-  stock         Int         @default(0)
-  description   String?
-  image         String?
-  createdAt     DateTime    @default(now())
-  tags          String[]
-  slug          String      @unique
-  subcategory   Subcategory @relation(fields: [subcategoryId], references: [id])
-  subcategoryId Int
-  category      Category    @relation(fields: [categoryId], references: [id])
-  categoryId    Int
-  user          User        @relation("UserProducts", fields: [userId], references: [id])
-  userId        Int
+  id               Int         @id @default(autoincrement())
+  name             String
+  price            Float
+  mrp              Float? // Added for original price
+  taxInfo          String? // Added for tax information
+  stock            Int         @default(0)
+  shortDescription String? // Added for brief description
+  fullDescription  String? // Added for detailed description
+  specifications   Json? // Added for technical specs
+  images           String[]
+  createdAt        DateTime    @default(now())
+  tags             String[]
+  slug             String      @unique
+  subcategory      Subcategory @relation(fields: [subcategoryId], references: [id])
+  subcategoryId    Int
+  category         Category    @relation(fields: [categoryId], references: [id])
+  categoryId       Int
+  user             User        @relation("UserProducts", fields: [userId], references: [id])
+  userId           Int
+  brand            Brand?      @relation(fields: [brandId], references: [id])
+  brandId          Int?
+  reviews          Review[]
+  attributes       Attribute[] // Added for product attributes
+}
+
+model Brand {
+  id       Int       @id @default(autoincrement())
+  name     String
+  slug     String    @unique
+  products Product[]
+}
+
+model Attribute {
+  id        Int     @id @default(autoincrement())
+  name      String
+  value     String
+  product   Product @relation(fields: [productId], references: [id])
+  productId Int
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  rating    Int
+  title     String
+  comment   String
+  date      DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+  productId Int
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
 }
 
 model User {
@@ -51,6 +86,7 @@ model User {
   role      Role      @default(BUYER)
   createdAt DateTime  @default(now())
   products  Product[] @relation("UserProducts")
+  reviews   Review[]
 }
 
 enum Role {
