@@ -19,7 +19,7 @@ export default function RelatedProducts({ products, currentProduct }: {
           >
             <div className="aspect-square relative">
               <Image
-                src={product.images[0]}
+                src={product.sizes.images[0]}
                 alt={product.name}
                 fill
                 className="object-cover"

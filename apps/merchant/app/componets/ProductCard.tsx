@@ -5,115 +5,96 @@ import { useState } from "react";
 
 export default function ProductCard({ product }: { product: any }) {
   const [hovered, setHovered] = useState(false);
-
-  // Extract all images from all sizes
   const allImages = product.sizes?.flatMap((size: any) => size.images || []) ?? [];
-
-  // Calculate price range display
   const hasMultipleSizes = product.sizes && product.sizes.length > 1;
   const minPrice = Math.min(...product.sizes.map((s: any) => s.price));
   const maxPrice = Math.max(...product.sizes.map((s: any) => s.price));
-
-  // Calculate total stock across all sizes
   const totalStock = product.sizes?.reduce((sum: number, size: any) => sum + (size.stock || 0), 0) ?? product.stock;
 
   return (
     <div
-      className="bg-white rounded-xl shadow-md overflow-hidden border border-green-100 hover:shadow-xl transition-all duration-300"
+      className="w-full max-w-xs bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-green-50 flex flex-col"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Product Image */}
-      {allImages.length > 0 && (
-        <img
-          src={hovered && allImages[1] ? allImages[1] : allImages[0]}
-          alt={product.name}
-          width={400}
-          height={300}
-          className="w-full h-56 object-cover transition duration-300"
-        />
-      )}
+      {/* Image container with fixed aspect ratio */}
+      <div className="relative overflow-hidden aspect-square">
+        {allImages.length > 0 && (
+          <img
+            src={hovered && allImages[1] ? allImages[1] : allImages[0]}
+            alt={product.name}
+            className="w-full h-full object-cover transition-opacity duration-500"
+          />
+        )}
 
-      <div className="p-4">
-        {/* Title & Price */}
-        <div className="flex justify-between items-start mb-2">
-          <h2 className="text-lg font-semibold text-green-800">
-            {product.name}
-          </h2>
-
-          <div className="text-right">
-            {hasMultipleSizes ? (
-              <span className="text-lg font-bold text-emerald-600">
-                ₹{minPrice.toFixed(2)} - ₹{maxPrice.toFixed(2)}
-              </span>
-            ) : (
-              <span className="text-lg font-bold text-emerald-600">
-                ₹{product.sizes[0]?.price.toFixed(2) || product.defaultPrice?.toFixed(2) || "N/A"}
-              </span>
-            )}
-            {hasMultipleSizes && (
-              <p className="text-xs text-gray-500 mt-1">{product.sizes.length} sizes available</p>
-            )}
-          </div>
+        {/* Stock indicator badge */}
+        <div className={`absolute top-3 right-3 px-2 py-1 rounded-full text-xs font-medium ${totalStock > 0 ? 'bg-green-100 text-green-800' : 'bg-rose-100 text-rose-800'
+          }`}>
+          {totalStock > 0 ? `${totalStock} in stock` : 'Sold out'}
         </div>
+      </div>
 
-        {/* {/* Brand */}
-        {/* {product.brand?.name && ( */}
-        {/*   <p className="text-sm text-gray-500 mb-2"> */}
-        {/*     Brand: <span className="font-medium">{product.brand.name}</span> */}
-        {/*   </p> */}
-        {/* )} */}
-
-        {/* Description */}
-        <p className="text-gray-600 text-sm line-clamp-2 mb-3">
-          {product.shortDescription}
-        </p>
-
-        {/* Size Details */}
-        <div className="mb-3">
-          <p className="text-sm font-medium text-gray-700 mb-1">Available Sizes:</p>
-          <div className="flex flex-wrap gap-2">
-            {product.sizes?.map((size: any, index: number) => (
-              <div
-                key={index}
-                className="text-xs bg-gray-100 px-2 py-1 rounded border border-gray-200"
-              >
-                <span className="font-medium">{size.label}</span>
-                <span className="text-emerald-600 ml-1">(₹{size.price.toFixed(2)})</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Category & Subcategory Tags */}
-        <div className="flex flex-wrap gap-2 text-xs mb-4">
+      <div className="p-4 flex flex-col flex-1">
+        {/* Category tags */}
+        <div className="flex gap-2 mb-2">
           {product.category?.name && (
-            <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full">
+            <span className="bg-emerald-50 text-emerald-700 text-xs px-2 py-1 rounded-full">
               {product.category.name}
             </span>
           )}
-          {product.subcategory?.name && (
-            <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">
-              {product.subcategory.name}
-            </span>
-          )}
         </div>
 
-        {/* Stock & CTA */}
-        <div className="flex justify-between items-center">
-          <span
-            className={`text-sm font-medium ${totalStock > 0 ? "text-green-600" : "text-red-500"
-              }`}
-          >
-            {totalStock > 0 ? `${totalStock} in stock` : "Out of stock"}
-          </span>
-          <Link
-            href={`/product/${product.slug}`}
-            className="text-sm px-3 py-1.5 rounded bg-green-600 hover:bg-green-700 text-white shadow transition"
-          >
-            View Details
-          </Link>
+        {/* Title and price */}
+        <div className="mb-2">
+          <h2 className="font-medium text-gray-900 line-clamp-2 min-h-[3rem]">
+            {product.name}
+          </h2>
+          <div className="mt-1 flex items-center">
+            <span className="text-lg font-bold text-emerald-700">
+              {hasMultipleSizes
+                ? `₹${minPrice.toFixed(2)} - ₹${maxPrice.toFixed(2)}`
+                : `₹${product.sizes[0]?.price.toFixed(2)}`
+              }
+            </span>
+            {hasMultipleSizes && (
+              <span className="ml-2 text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                {product.sizes.length} sizes
+              </span>
+            )}
+          </div>
         </div>
+
+        {/* Short description */}
+        <p className="text-gray-500 text-sm line-clamp-2 mb-3 mt-auto">
+          {product.shortDescription}
+        </p>
+
+        {/* Size chips */}
+        <div className="mt-2 mb-3">
+          <div className="flex flex-wrap gap-1">
+            {product.sizes?.slice(0, 4).map((size: any, index: number) => (
+              <div
+                key={index}
+                className="text-xs bg-emerald-50 text-emerald-800 px-2 py-1 rounded-full border border-emerald-100"
+              >
+                {size.label}
+              </div>
+            ))}
+            {product.sizes?.length > 4 && (
+              <div className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
+                +{product.sizes.length - 4} more
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* View button */}
+        <Link
+          href={`/product/${product.slug}`}
+          className="mt-auto w-full py-2 text-center rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-medium transition-colors duration-300"
+        >
+          View Details
+        </Link>
       </div>
     </div>
   );

@@ -148,16 +148,16 @@ export default function AddPlant() {
       if (Number(size.stock) < 0) newErrors[`size-${index}-stock`] = 'Stock cannot be negative';
 
       // Image validation for each size
-      const validImages = size.images.filter(img => img.trim());
-      if (validImages.length === 0) {
-        newErrors[`size-${index}-images`] = 'At least one image is required for this size';
-      } else {
-        validImages.forEach(img => {
-          if (!/^https?:\/\/.+\.(jpg|jpeg|png|webp)$/.test(img)) {
-            newErrors[`size-${index}-images`] = 'Invalid image URL format (must be jpg, jpeg, png, or webp)';
-          }
-        });
-      }
+      // const validImages = size.images.filter(img => img.trim());
+      // if (validImages.length === 0) {
+      //   newErrors[`size-${index}-images`] = 'At least one image is required for this size';
+      // } else {
+      //   validImages.forEach(img => {
+      //     if (!/^https?:\/\/.+\.(jpg|jpeg|png|webp)$/.test(img)) {
+      //       newErrors[`size-${index}-images`] = 'Invalid image URL format (must be jpg, jpeg, png, or webp)';
+      //     }
+      //   });
+      // }
     });
 
     return newErrors;
@@ -207,7 +207,7 @@ export default function AddPlant() {
           images: size.images.filter(img => img.trim())
         }))
       };
-
+      console.log(payload)
       const res = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
