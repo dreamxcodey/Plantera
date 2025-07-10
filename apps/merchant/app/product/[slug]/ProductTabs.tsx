@@ -14,7 +14,7 @@ export default function ProductTabs({
   const [activeTab, setActiveTab] = useState('description');
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm mt-8">
+    <div className=" p-6 rounded-xl shadow-sm mt-8">
       <div className="border-b">
         <div className="flex space-x-8">
           <button

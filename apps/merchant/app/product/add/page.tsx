@@ -7,21 +7,29 @@ export default function AddPlant() {
   const [subcategories, setSubcategories] = useState([]);
   const [allTags, setAllTags] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [brands, setBrands] = useState<[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [images, setImages] = useState<string[]>(['']);
+  const [specifications, setSpecifications] = useState<{ key: string, value: string }[]>([
+    { key: '', value: '' }
+  ]);
 
   const [formData, setFormData] = useState({
     name: '',
     price: '',
+    mrp: '',
+    taxInfo: '',
     stock: '0',
-    description: '',
-    image: '',
+    shortDescription: '',
+    fullDescription: '',
     categoryId: '',
     subcategoryId: '',
     newCategory: '',
     newSubcategory: '',
     userId: '1',
+    brandId: '',
   });
 
   useEffect(() => {
@@ -34,6 +42,11 @@ export default function AddPlant() {
       .then(res => res.json())
       .then(setAllTags)
       .catch(() => setErrors({ fetch: 'Failed to load tags' }));
+
+    fetch('/api/brands')
+      .then(res => res.json())
+      .then(setBrands)
+      .catch(() => setErrors({ fetch: 'Failed to load brands' }));
   }, []);
 
   useEffect(() => {
@@ -67,19 +80,78 @@ export default function AddPlant() {
     );
   };
 
+  // Image handling functions
+  const handleImageChange = (index: number, value: string) => {
+    const newImages = [...images];
+    newImages[index] = value;
+    setImages(newImages);
+
+    // Clear image error when user adds an image
+    if (errors.images) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.images;
+        return newErrors;
+      });
+    }
+  };
+
+  const addImageField = () => setImages([...images, '']);
+  const removeImageField = (index: number) => {
+    if (images.length <= 1) return;
+    const newImages = [...images];
+    newImages.splice(index, 1);
+    setImages(newImages);
+  };
+
+  // Specification handling functions
+  const handleSpecChange = (index: number, field: 'key' | 'value', text: string) => {
+    const newSpecs = [...specifications];
+    newSpecs[index][field] = text;
+    setSpecifications(newSpecs);
+  };
+
+  const addSpecField = () => setSpecifications([...specifications, { key: '', value: '' }]);
+  const removeSpecField = (index: number) => {
+    if (specifications.length <= 1) return;
+    const newSpecs = [...specifications];
+    newSpecs.splice(index, 1);
+    setSpecifications(newSpecs);
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
+    // Required fields validation
     if (!formData.name.trim()) newErrors.name = 'Plant name is required';
     if (!formData.price) newErrors.price = 'Price is required';
     if (Number(formData.price) <= 0) newErrors.price = 'Price must be greater than 0';
     if (Number(formData.stock) < 0) newErrors.stock = 'Stock cannot be negative';
     if (!formData.categoryId && !formData.newCategory.trim()) newErrors.category = 'Category is required';
-    if (formData.image && !/^https?:\/\/.+\.(jpg|jpeg|png|webp)$/.test(formData.image)) {
-      newErrors.image = 'Invalid image URL format';
+    if (!formData.shortDescription) newErrors.shortDescription = 'Short description is required';
+
+    // Image validation
+    const validImages = images.filter(img => img.trim());
+    if (validImages.length === 0) {
+      newErrors.images = 'At least one image is required';
+    } else {
+      validImages.forEach(img => {
+        if (!/^https?:\/\/.+\.(jpg|jpeg|png|webp)$/.test(img)) {
+          newErrors.images = 'Invalid image URL format (must be jpg, jpeg, png, or webp)';
+        }
+      });
     }
 
     return newErrors;
+  };
+
+  const generateSlug = (name: string): string => {
+    return name
+      .toLowerCase()
+      .replace(/[^\w\s]/gi, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .substring(0, 60);
   };
 
   const handleSubmit = async (e: any) => {
@@ -98,7 +170,13 @@ export default function AddPlant() {
     try {
       const payload = {
         ...formData,
+        slug: generateSlug(formData.name),
+        images: images.filter(img => img.trim()),
         tags: selectedTags,
+        specifications: specifications.filter(spec => spec.key && spec.value),
+        mrp: formData.mrp || null,
+        taxInfo: formData.taxInfo || null,
+        brandId: formData.brandId || null,
       };
 
       const res = await fetch('/api/products', {
@@ -114,19 +192,25 @@ export default function AddPlant() {
       }
 
       setSuccessMessage('🌿 Plant added successfully!');
+      // Reset form
       setFormData({
         name: '',
         price: '',
+        mrp: '',
+        taxInfo: '',
         stock: '0',
-        description: '',
-        image: '',
+        shortDescription: '',
+        fullDescription: '',
         categoryId: '',
         subcategoryId: '',
         newCategory: '',
         newSubcategory: '',
         userId: '1',
+        brandId: '',
       });
       setSelectedTags([]);
+      setImages(['']);
+      setSpecifications([{ key: '', value: '' }]);
     } catch (error: any) {
       setErrors({ submit: error.message || 'An unexpected error occurred' });
     } finally {
@@ -135,7 +219,7 @@ export default function AddPlant() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-6 p-6 bg-amber-50 border border-green-200 rounded-xl shadow-lg">
+    <div className="max-w-4xl mx-auto mt-6 p-6 bg-amber-50 border border-green-200 rounded-xl shadow-lg">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-green-800 flex items-center justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -177,7 +261,7 @@ export default function AddPlant() {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
-              Plant Name
+              Plant Name *
             </label>
             <input
               name="name"
@@ -194,7 +278,7 @@ export default function AddPlant() {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Price ($)
+              Price ($) *
             </label>
             <input
               name="price"
@@ -213,7 +297,7 @@ export default function AddPlant() {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
               </svg>
-              Stock Quantity
+              Stock Quantity *
             </label>
             <input
               name="stock"
@@ -229,39 +313,129 @@ export default function AddPlant() {
           <div>
             <label className="block text-green-700 font-medium mb-2 flex items-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Image URL
+              Original Price ($)
             </label>
             <input
-              name="image"
-              placeholder="https://example.com/plant.jpg"
-              value={formData.image}
+              name="mrp"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              value={formData.mrp}
               onChange={handleChange}
-              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${errors.image ? 'border-red-500 bg-red-50' : 'border-green-200'}`}
+              className="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500"
             />
-            {errors.image && <p className="text-red-500 text-sm mt-1">{errors.image}</p>}
+          </div>
+
+          <div>
+            <label className="block text-green-700 font-medium mb-2 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              Tax Information
+            </label>
+            <input
+              name="taxInfo"
+              placeholder="e.g., GST 5%"
+              value={formData.taxInfo}
+              onChange={handleChange}
+              className="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-green-700 font-medium mb-2 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Brand
+            </label>
+            <select
+              name="brandId"
+              value={formData.brandId}
+              onChange={handleChange}
+              className="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500"
+            >
+              <option value="">Select brand</option>
+              {brands.map((brand) => (
+                <option key={brand.id} value={brand.id}>
+                  {brand.name}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
         <div>
-          <label className="block text-green-700 font-medium mb-2">Description</label>
+          <label className="block text-green-700 font-medium mb-2">
+            Short Description *
+          </label>
           <textarea
-            name="description"
-            placeholder="Describe the plant's features, care instructions, etc."
-            value={formData.description}
+            name="shortDescription"
+            placeholder="Brief description for product listings"
+            value={formData.shortDescription}
+            onChange={handleChange}
+            className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 min-h-[100px] ${errors.shortDescription ? 'border-red-500 bg-red-50' : 'border-green-200'
+              }`}
+          />
+          {errors.shortDescription && <p className="text-red-500 text-sm mt-1">{errors.shortDescription}</p>}
+        </div>
+
+        <div>
+          <label className="block text-green-700 font-medium mb-2">
+            Full Description
+          </label>
+          <textarea
+            name="fullDescription"
+            placeholder="Detailed description about the plant"
+            value={formData.fullDescription}
             onChange={handleChange}
             className="w-full p-3 border border-green-200 rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 min-h-[120px]"
           />
         </div>
 
+        <div>
+          <label className="block text-green-700 font-medium mb-2">
+            Image URLs *
+            <span className="text-sm text-gray-500 ml-2">(At least one required)</span>
+          </label>
+          {images.map((img, index) => (
+            <div key={index} className="flex gap-2 mb-2">
+              <input
+                value={img}
+                onChange={(e) => handleImageChange(index, e.target.value)}
+                placeholder="https://example.com/plant.jpg"
+                className={`flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${errors.images ? 'border-red-500 bg-red-50' : 'border-green-200'
+                  }`}
+              />
+              <button
+                type="button"
+                onClick={() => removeImageField(index)}
+                className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 disabled:opacity-50"
+                disabled={images.length <= 1}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addImageField}
+            className="mt-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200"
+          >
+            + Add Another Image
+          </button>
+          {errors.images && <p className="text-red-500 text-sm mt-1">{errors.images}</p>}
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-green-700 font-medium mb-2 flex items-center">
-              <svg xmlns="http://www.wwww3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
               </svg>
-              Category
+              Category *
             </label>
             <select
               name="categoryId"
@@ -321,6 +495,43 @@ export default function AddPlant() {
         </div>
 
         <div>
+          <label className="block text-green-700 font-medium mb-2">
+            Specifications
+          </label>
+          {specifications.map((spec, index) => (
+            <div key={index} className="grid grid-cols-1 md:grid-cols-5 gap-2 mb-2">
+              <input
+                value={spec.key}
+                onChange={(e) => handleSpecChange(index, 'key', e.target.value)}
+                placeholder="Key (e.g., Height)"
+                className="md:col-span-2 p-3 border border-green-200 rounded-lg"
+              />
+              <input
+                value={spec.value}
+                onChange={(e) => handleSpecChange(index, 'value', e.target.value)}
+                placeholder="Value (e.g., 30cm)"
+                className="md:col-span-2 p-3 border border-green-200 rounded-lg"
+              />
+              <button
+                type="button"
+                onClick={() => removeSpecField(index)}
+                className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 disabled:opacity-50"
+                disabled={specifications.length <= 1}
+              >
+                Remove
+              </button>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addSpecField}
+            className="mt-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200"
+          >
+            + Add Specification
+          </button>
+        </div>
+
+        <div>
           <label className="block text-green-700 font-medium mb-2 flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
@@ -352,8 +563,8 @@ export default function AddPlant() {
           type="submit"
           disabled={isSubmitting}
           className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-all flex items-center justify-center ${isSubmitting
-              ? 'bg-green-400 cursor-not-allowed'
-              : 'bg-green-700 hover:bg-green-800 hover:shadow-lg'
+            ? 'bg-green-400 cursor-not-allowed'
+            : 'bg-green-700 hover:bg-green-800 hover:shadow-lg'
             }`}
         >
           {isSubmitting ? (

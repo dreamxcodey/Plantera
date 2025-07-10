@@ -1,7 +1,9 @@
-import { useState,useEffect } from "react";
+// import { useState,useEffect } from "react";
+
+import Link from "next/link";
 
 export default function Navbar() {
-  const [isScrolled, setIsScrolled] = useState(false);
+  // const [isScrolled, setIsScrolled] = useState(false);
 
   // useEffect(() => {
   //   const handleScroll = () => {
@@ -12,7 +14,7 @@ export default function Navbar() {
   // }, []);
   return (
     <header
-      className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? "bg-white shadow-md py-2" : "bg-transparent py-4"}`}
+      className={` w-full transition-all duration-300  shadow-md py-2`}
     >
       <div className="container mx-auto px-4 flex justify-between items-center">
         <div className="flex items-center space-x-2">
@@ -22,7 +24,7 @@ export default function Navbar() {
           <h1 className="text-2xl font-bold text-green-800">Plantera</h1>
         </div>
 
-        {/* <nav className="hidden md:flex space-x-8">
+        <nav className="hidden md:flex space-x-8">
           <a
             href="#"
             className="text-green-800 font-medium hover:text-green-600"
@@ -35,12 +37,12 @@ export default function Navbar() {
           >
             Shop
           </a>
-          <a
-            href="#"
+          <Link
+            href="/category"
             className="text-green-800 font-medium hover:text-green-600"
           >
             Categories
-          </a>
+          </Link>
           <a
             href="#"
             className="text-green-800 font-medium hover:text-green-600"
@@ -53,7 +55,7 @@ export default function Navbar() {
           >
             Contact
           </a>
-        </nav> */}
+        </nav>
 
         <div className="flex items-center space-x-4">
           <button className="text-green-800 hover:text-green-600">

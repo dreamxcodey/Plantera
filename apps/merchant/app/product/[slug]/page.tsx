@@ -1,13 +1,25 @@
-import { Star, ShoppingCart, Package, ShieldCheck, Truck, Heart } from 'lucide-react';
+import {
+  Star,
+  ShoppingCart,
+  Package,
+  ShieldCheck,
+  Truck,
+  Heart,
+} from "lucide-react";
 import prisma from "@repo/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import ImageGallery from "./ImageGallery";
-import AddToCart from "./AddCart";
+import Image from "next/image";
 import ProductTabs from "./ProductTabs";
 import RelatedProducts from "./RealatedProducts";
+import AddToCart from "./AddCart";
 
-export default async function ProductPage({ params }: { params: { slug: string } }) {
+export default async function ProductPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
   const product = await prisma.product.findUnique({
     where: { slug: params.slug },
     include: {
@@ -16,54 +28,69 @@ export default async function ProductPage({ params }: { params: { slug: string }
       brand: true,
       attributes: true,
       reviews: {
-        include: { user: true }
-      }
+        include: { user: true },
+      },
     },
   });
 
   if (!product) return notFound();
 
-  const avgRating = product.reviews.length > 0
-    ? product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length
-    : 0;
+  const avgRating =
+    product.reviews.length > 0
+      ? product.reviews.reduce((acc, review) => acc + review.rating, 0) /
+      product.reviews.length
+      : 0;
 
-  // Find related products
   const relatedProducts = await prisma.product.findMany({
     where: {
       categoryId: product.categoryId,
       NOT: { id: product.id },
     },
     take: 4,
-    include: { brand: true }
+    include: { brand: true },
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8  bg-gradient-to-r from-green-50 to-emerald-50">
       {/* Breadcrumbs */}
-      <div className="text-sm text-gray-500 mb-6">
-        <Link href="/" className="hover:text-green-600">Home</Link>
-        {' > '}
-        <Link href={`/category/${product.category.slug}`} className="hover:text-green-600">
+      <div className="text-sm text-gray-500 mb-6 flex items-center">
+        <Link href="/" className="hover:text-green-600 transition-colors">
+          Home
+        </Link>
+        <span className="mx-2">/</span>
+        <Link
+          href={`/categories/${product.category.slug}`}
+          className="hover:text-green-600 transition-colors"
+        >
           {product.category.name}
         </Link>
-        {' > '}
-        <Link href={`/subcategory/${product.subcategory.slug}`} className="hover:text-green-600">
+        <span className="mx-2">/</span>
+        <Link
+          href={`/categories/${product.category.slug}/${product.subcategory.slug}`}
+          className="hover:text-green-600 transition-colors"
+        >
           {product.subcategory.name}
         </Link>
-        {' > '}
-        <span className="text-gray-900 font-medium">{product.name}</span>
+        <span className="mx-2">/</span>
+        <span className="text-gray-900 font-medium truncate max-w-xs">
+          {product.name}
+        </span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Image Gallery */}
-        <div className="bg-white p-4 rounded-xl shadow-sm">
-          <ImageGallery images={product.images} />
+        <div className=" p-4 rounded-xl border border-gray-100">
+          <div className=" p-4 rounded-xl shadow border border-green-100">
+            <ImageGallery images={product.images} />
+          </div>
         </div>
 
         {/* Product Details */}
-        <div className="bg-white p-6 rounded-xl shadow-sm">
+        <div className="p-2">
           <div className="border-b pb-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-3">
+              {product.name}
+            </h1>
 
             <div className="flex items-center mb-4">
               <div className="flex">
@@ -71,9 +98,10 @@ export default async function ProductPage({ params }: { params: { slug: string }
                   <Star
                     key={i}
                     size={18}
-                    className={i < Math.floor(avgRating)
-                      ? "text-yellow-400 fill-yellow-400"
-                      : "text-gray-300"
+                    className={
+                      i < Math.floor(avgRating)
+                        ? "text-yellow-500 fill-yellow-400"
+                        : "text-gray-300"
                     }
                   />
                 ))}
@@ -82,8 +110,10 @@ export default async function ProductPage({ params }: { params: { slug: string }
                 {product.reviews.length} reviews
               </span>
               <span className="mx-2 text-gray-300">|</span>
-              <span className={`text-sm ${product.stock > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+              <span
+                className={`text-sm font-medium ${product.stock > 0 ? "text-green-600" : "text-red-600"}`}
+              >
+                {product.stock > 0 ? "In Stock" : "Out of Stock"}
               </span>
             </div>
 
@@ -92,7 +122,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
                 <span className="text-gray-600">Brand: </span>
                 <Link
                   href={`/brand/${product.brand.slug}`}
-                  className="font-medium hover:text-green-600"
+                  className="font-medium text-green-700 hover:underline"
                 >
                   {product.brand.name}
                 </Link>
@@ -101,14 +131,20 @@ export default async function ProductPage({ params }: { params: { slug: string }
 
             <div className="mb-6">
               <div className="flex items-baseline gap-3">
-                <span className="text-3xl font-bold text-green-700">₹{product.price.toLocaleString()}</span>
+                <span className="text-3xl font-bold text-gray-900">
+                  ₹{product.price.toLocaleString()}
+                </span>
                 {product.mrp && product.mrp > product.price && (
-                  <span className="text-gray-500 line-through">₹{product.mrp.toLocaleString()}</span>
-                )}
-                {product.mrp && product.mrp > product.price && (
-                  <span className="text-green-600 font-medium">
-                    {Math.round((1 - product.price / product.mrp) * 100)}% off
-                  </span>
+                  <>
+                    <span className="text-gray-500 line-through">
+                      ₹{product.mrp.toLocaleString()}
+                    </span>
+                    <span className="text-green-600 font-medium">
+                      {Math.round(
+                        (1 - product.price / product.mrp) * 100
+                      )}% off
+                    </span>
+                  </>
                 )}
               </div>
               {product.taxInfo && (
@@ -118,47 +154,60 @@ export default async function ProductPage({ params }: { params: { slug: string }
               )}
             </div>
 
-            <p className="text-gray-700 mb-6">{product.shortDescription}</p>
+            <p className="text-gray-700 mb-6 leading-relaxed">
+              {product.shortDescription}
+            </p>
 
             {/* Key Features */}
             {product.attributes.length > 0 && (
               <div className="mb-6">
-                <h3 className="font-medium mb-2">Key Features:</h3>
-                <ul className="grid grid-cols-2 gap-2">
+                <h3 className="font-semibold text-gray-900 mb-3 text-lg">
+                  Key Features:
+                </h3>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {product.attributes.map((attr, idx) => (
-                    <li key={idx} className="flex items-center">
-                      <span className="text-green-600 mr-2">✓</span>
-                      <span className="text-gray-600">{attr.name}: {attr.value}</span>
+                    <li key={idx} className="flex items-start">
+                      <span className="text-green-600 mr-2 mt-1">•</span>
+                      <span className="text-gray-700">
+                        <span className="font-medium">{attr.name}:</span>{" "}
+                        {attr.value}
+                      </span>
                     </li>
                   ))}
                 </ul>
               </div>
             )}
 
-            {/* Add to Cart Section */}
+            {/* Add to Cart */}
             <AddToCart product={product} />
           </div>
 
-          {/* Shipping & Benefits */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-6">
-            <div className="flex items-center">
-              <Truck className="text-green-600 mr-2" size={20} />
+          {/* Benefits */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-6">
+            <div className="flex items-center p-3 rounded-lg border border-gray-100">
+              <div className="bg-green-50 p-2 rounded-full mr-3">
+                <Truck className="text-green-600" size={20} />
+              </div>
               <div>
-                <p className="font-medium">Free Delivery</p>
+                <p className="font-medium text-gray-900">Free Delivery</p>
                 <p className="text-xs text-gray-500">Delivery in 2-4 days</p>
               </div>
             </div>
-            <div className="flex items-center">
-              <Package className="text-green-600 mr-2" size={20} />
+            <div className="flex items-center p-3 rounded-lg border border-gray-100">
+              <div className="bg-green-50 p-2 rounded-full mr-3">
+                <Package className="text-green-600" size={20} />
+              </div>
               <div>
-                <p className="font-medium">Easy Returns</p>
+                <p className="font-medium text-gray-900">Easy Returns</p>
                 <p className="text-xs text-gray-500">30 Day Policy</p>
               </div>
             </div>
-            <div className="flex items-center">
-              <ShieldCheck className="text-green-600 mr-2" size={20} />
+            <div className="flex items-center p-3 rounded-lg border border-gray-100">
+              <div className="bg-green-50 p-2 rounded-full mr-3">
+                <ShieldCheck className="text-green-600" size={20} />
+              </div>
               <div>
-                <p className="font-medium">1 Year Warranty</p>
+                <p className="font-medium text-gray-900">1 Year Warranty</p>
                 <p className="text-xs text-gray-500">Genuine Parts</p>
               </div>
             </div>

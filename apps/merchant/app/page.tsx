@@ -1,5 +1,5 @@
 "use client";
-import Navbar from "@repo/ui/navbar";
+import Navbar from "./componets/navbar";
 import { useRouter } from "next/navigation";
 
 export default function Page() {

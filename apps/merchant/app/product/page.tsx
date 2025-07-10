@@ -11,7 +11,7 @@ export default async function ProductsPage() {
   });
 
   return (
-    <div className="mt-16 max-w-6xl mx-auto p-4">
+    <div className="mt-16 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-green-700">Plant Collection</h1>
         <Link
