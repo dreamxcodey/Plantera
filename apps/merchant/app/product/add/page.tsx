@@ -11,17 +11,17 @@ export default function AddPlant() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const [images, setImages] = useState<string[]>(['']);
   const [specifications, setSpecifications] = useState<{ key: string, value: string }[]>([
     { key: '', value: '' }
+  ]);
+  const [sizes, setSizes] = useState([
+    { dimension: '', label: '', price: '', stock: '0', images: [''] }
   ]);
 
   const [formData, setFormData] = useState({
     name: '',
-    price: '',
     mrp: '',
     taxInfo: '',
-    stock: '0',
     shortDescription: '',
     fullDescription: '',
     categoryId: '',
@@ -64,7 +64,6 @@ export default function AddPlant() {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
 
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -80,28 +79,41 @@ export default function AddPlant() {
     );
   };
 
-  // Image handling functions
-  const handleImageChange = (index: number, value: string) => {
-    const newImages = [...images];
-    newImages[index] = value;
-    setImages(newImages);
-
-    // Clear image error when user adds an image
-    if (errors.images) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors.images;
-        return newErrors;
-      });
-    }
+  // Size handling functions
+  const handleSizeChange = (index: number, field: string, value: string) => {
+    const newSizes = [...sizes];
+    newSizes[index] = { ...newSizes[index], [field]: value };
+    setSizes(newSizes);
   };
 
-  const addImageField = () => setImages([...images, '']);
-  const removeImageField = (index: number) => {
-    if (images.length <= 1) return;
-    const newImages = [...images];
-    newImages.splice(index, 1);
-    setImages(newImages);
+  const handleSizeImageChange = (sizeIndex: number, imgIndex: number, value: string) => {
+    const newSizes = [...sizes];
+    newSizes[sizeIndex].images[imgIndex] = value;
+    setSizes(newSizes);
+  };
+
+  const addSizeImageField = (sizeIndex: number) => {
+    const newSizes = [...sizes];
+    newSizes[sizeIndex].images.push('');
+    setSizes(newSizes);
+  };
+
+  const removeSizeImageField = (sizeIndex: number, imgIndex: number) => {
+    if (sizes[sizeIndex].images.length <= 1) return;
+    const newSizes = [...sizes];
+    newSizes[sizeIndex].images.splice(imgIndex, 1);
+    setSizes(newSizes);
+  };
+
+  const addSize = () => {
+    setSizes([...sizes, { dimension: '', label: '', price: '', stock: '0', images: [''] }]);
+  };
+
+  const removeSize = (index: number) => {
+    if (sizes.length <= 1) return;
+    const newSizes = [...sizes];
+    newSizes.splice(index, 1);
+    setSizes(newSizes);
   };
 
   // Specification handling functions
@@ -124,23 +136,29 @@ export default function AddPlant() {
 
     // Required fields validation
     if (!formData.name.trim()) newErrors.name = 'Plant name is required';
-    if (!formData.price) newErrors.price = 'Price is required';
-    if (Number(formData.price) <= 0) newErrors.price = 'Price must be greater than 0';
-    if (Number(formData.stock) < 0) newErrors.stock = 'Stock cannot be negative';
-    if (!formData.categoryId && !formData.newCategory.trim()) newErrors.category = 'Category is required';
     if (!formData.shortDescription) newErrors.shortDescription = 'Short description is required';
+    if (!formData.categoryId && !formData.newCategory.trim()) newErrors.category = 'Category is required';
 
-    // Image validation
-    const validImages = images.filter(img => img.trim());
-    if (validImages.length === 0) {
-      newErrors.images = 'At least one image is required';
-    } else {
-      validImages.forEach(img => {
-        if (!/^https?:\/\/.+\.(jpg|jpeg|png|webp)$/.test(img)) {
-          newErrors.images = 'Invalid image URL format (must be jpg, jpeg, png, or webp)';
-        }
-      });
-    }
+    // Validate sizes
+    sizes.forEach((size, index) => {
+      if (!size.dimension.trim()) newErrors[`size-${index}-dimension`] = 'Dimension is required';
+      if (!size.label.trim()) newErrors[`size-${index}-label`] = 'Label is required';
+      if (!size.price) newErrors[`size-${index}-price`] = 'Price is required';
+      if (Number(size.price) <= 0) newErrors[`size-${index}-price`] = 'Price must be greater than 0';
+      if (Number(size.stock) < 0) newErrors[`size-${index}-stock`] = 'Stock cannot be negative';
+
+      // Image validation for each size
+      const validImages = size.images.filter(img => img.trim());
+      if (validImages.length === 0) {
+        newErrors[`size-${index}-images`] = 'At least one image is required for this size';
+      } else {
+        validImages.forEach(img => {
+          if (!/^https?:\/\/.+\.(jpg|jpeg|png|webp)$/.test(img)) {
+            newErrors[`size-${index}-images`] = 'Invalid image URL format (must be jpg, jpeg, png, or webp)';
+          }
+        });
+      }
+    });
 
     return newErrors;
   };
@@ -168,15 +186,26 @@ export default function AddPlant() {
     }
 
     try {
+      // Calculate default price (lowest size price)
+      const defaultPrice = Math.min(...sizes.map(size => parseFloat(size.price)));
+
       const payload = {
         ...formData,
         slug: generateSlug(formData.name),
-        images: images.filter(img => img.trim()),
         tags: selectedTags,
         specifications: specifications.filter(spec => spec.key && spec.value),
         mrp: formData.mrp || null,
         taxInfo: formData.taxInfo || null,
         brandId: formData.brandId || null,
+        defaultPrice,
+        stock: sizes.reduce((total, size) => total + parseInt(size.stock || '0'), 0),
+        sizes: sizes.map(size => ({
+          dimension: size.dimension,
+          label: size.label,
+          price: parseFloat(size.price),
+          stock: parseInt(size.stock || '0'),
+          images: size.images.filter(img => img.trim())
+        }))
       };
 
       const res = await fetch('/api/products', {
@@ -195,10 +224,8 @@ export default function AddPlant() {
       // Reset form
       setFormData({
         name: '',
-        price: '',
         mrp: '',
         taxInfo: '',
-        stock: '0',
         shortDescription: '',
         fullDescription: '',
         categoryId: '',
@@ -209,7 +236,7 @@ export default function AddPlant() {
         brandId: '',
       });
       setSelectedTags([]);
-      setImages(['']);
+      setSizes([{ dimension: '', label: '', price: '', stock: '0', images: [''] }]);
       setSpecifications([{ key: '', value: '' }]);
     } catch (error: any) {
       setErrors({ submit: error.message || 'An unexpected error occurred' });
@@ -271,43 +298,6 @@ export default function AddPlant() {
               className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${errors.name ? 'border-red-500 bg-red-50' : 'border-green-200'}`}
             />
             {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
-          </div>
-
-          <div>
-            <label className="block text-green-700 font-medium mb-2 flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              Price ($) *
-            </label>
-            <input
-              name="price"
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              value={formData.price}
-              onChange={handleChange}
-              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${errors.price ? 'border-red-500 bg-red-50' : 'border-green-200'}`}
-            />
-            {errors.price && <p className="text-red-500 text-sm mt-1">{errors.price}</p>}
-          </div>
-
-          <div>
-            <label className="block text-green-700 font-medium mb-2 flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-              </svg>
-              Stock Quantity *
-            </label>
-            <input
-              name="stock"
-              type="number"
-              placeholder="0"
-              value={formData.stock}
-              onChange={handleChange}
-              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${errors.stock ? 'border-red-500 bg-red-50' : 'border-green-200'}`}
-            />
-            {errors.stock && <p className="text-red-500 text-sm mt-1">{errors.stock}</p>}
           </div>
 
           <div>
@@ -395,38 +385,112 @@ export default function AddPlant() {
           />
         </div>
 
+        {/* Bag Sizes Section */}
         <div>
           <label className="block text-green-700 font-medium mb-2">
-            Image URLs *
-            <span className="text-sm text-gray-500 ml-2">(At least one required)</span>
+            Bag Sizes *
           </label>
-          {images.map((img, index) => (
-            <div key={index} className="flex gap-2 mb-2">
-              <input
-                value={img}
-                onChange={(e) => handleImageChange(index, e.target.value)}
-                placeholder="https://example.com/plant.jpg"
-                className={`flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${errors.images ? 'border-red-500 bg-red-50' : 'border-green-200'
-                  }`}
-              />
-              <button
-                type="button"
-                onClick={() => removeImageField(index)}
-                className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 disabled:opacity-50"
-                disabled={images.length <= 1}
-              >
-                Remove
-              </button>
+          {sizes.map((size, sizeIndex) => (
+            <div key={sizeIndex} className="border border-green-200 rounded-lg p-4 mb-4 bg-white">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-green-700 font-medium mb-2">Dimension *</label>
+                  <input
+                    value={size.dimension}
+                    onChange={(e) => handleSizeChange(sizeIndex, 'dimension', e.target.value)}
+                    placeholder="e.g., S, M, L or 1kg, 2kg"
+                    className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${errors[`size-${sizeIndex}-dimension`] ? 'border-red-500 bg-red-50' : 'border-green-200'}`}
+                  />
+                  {errors[`size-${sizeIndex}-dimension`] && <p className="text-red-500 text-sm mt-1">{errors[`size-${sizeIndex}-dimension`]}</p>}
+                </div>
+                <div>
+                  <label className="block text-green-700 font-medium mb-2">Label *</label>
+                  <input
+                    value={size.label}
+                    onChange={(e) => handleSizeChange(sizeIndex, 'label', e.target.value)}
+                    placeholder="e.g., Small, Medium, Large"
+                    className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${errors[`size-${sizeIndex}-label`] ? 'border-red-500 bg-red-50' : 'border-green-200'}`}
+                  />
+                  {errors[`size-${sizeIndex}-label`] && <p className="text-red-500 text-sm mt-1">{errors[`size-${sizeIndex}-label`]}</p>}
+                </div>
+                <div>
+                  <label className="block text-green-700 font-medium mb-2">Price ($) *</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={size.price}
+                    onChange={(e) => handleSizeChange(sizeIndex, 'price', e.target.value)}
+                    placeholder="0.00"
+                    className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${errors[`size-${sizeIndex}-price`] ? 'border-red-500 bg-red-50' : 'border-green-200'}`}
+                  />
+                  {errors[`size-${sizeIndex}-price`] && <p className="text-red-500 text-sm mt-1">{errors[`size-${sizeIndex}-price`]}</p>}
+                </div>
+                <div>
+                  <label className="block text-green-700 font-medium mb-2">Stock *</label>
+                  <input
+                    type="number"
+                    value={size.stock}
+                    onChange={(e) => handleSizeChange(sizeIndex, 'stock', e.target.value)}
+                    placeholder="0"
+                    className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${errors[`size-${sizeIndex}-stock`] ? 'border-red-500 bg-red-50' : 'border-green-200'}`}
+                  />
+                  {errors[`size-${sizeIndex}-stock`] && <p className="text-red-500 text-sm mt-1">{errors[`size-${sizeIndex}-stock`]}</p>}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-green-700 font-medium mb-2">
+                  Image URLs for this size *
+                  <span className="text-sm text-gray-500 ml-2">(At least one required)</span>
+                </label>
+                {size.images.map((img, imgIndex) => (
+                  <div key={imgIndex} className="flex gap-2 mb-2">
+                    <input
+                      value={img}
+                      onChange={(e) => handleSizeImageChange(sizeIndex, imgIndex, e.target.value)}
+                      placeholder="https://example.com/plant.jpg"
+                      className={`flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${errors[`size-${sizeIndex}-images`] ? 'border-red-500 bg-red-50' : 'border-green-200'}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeSizeImageField(sizeIndex, imgIndex)}
+                      className="px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 disabled:opacity-50"
+                      disabled={size.images.length <= 1}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={() => addSizeImageField(sizeIndex)}
+                  className="mt-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200"
+                >
+                  + Add Another Image
+                </button>
+                {errors[`size-${sizeIndex}-images`] && <p className="text-red-500 text-sm mt-1">{errors[`size-${sizeIndex}-images`]}</p>}
+              </div>
+
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={() => removeSize(sizeIndex)}
+                  className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 disabled:opacity-50"
+                  disabled={sizes.length <= 1}
+                >
+                  Remove Size
+                </button>
+              </div>
             </div>
           ))}
+
           <button
             type="button"
-            onClick={addImageField}
-            className="mt-2 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200"
+            onClick={addSize}
+            className="mt-4 px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200"
           >
-            + Add Another Image
+            + Add Another Size
           </button>
-          {errors.images && <p className="text-red-500 text-sm mt-1">{errors.images}</p>}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -14,15 +14,23 @@ import Image from "next/image";
 import ProductTabs from "./ProductTabs";
 import RelatedProducts from "./RealatedProducts";
 import AddToCart from "./AddCart";
+import SizeSelector from "./sizeSelector"; // New component
 
 export default async function ProductPage({
   params,
+  searchParams,
 }: {
   params: { slug: string };
+  searchParams: { size?: string };
 }) {
   const product = await prisma.product.findUnique({
     where: { slug: params.slug },
     include: {
+      sizes: {
+        orderBy: {
+          price: 'asc'
+        }
+      },
       category: true,
       subcategory: true,
       brand: true,
@@ -34,6 +42,13 @@ export default async function ProductPage({
   });
 
   if (!product) return notFound();
+
+  // Get selected size from URL or default to first size
+  const selectedSizeId = searchParams.size
+    ? parseInt(searchParams.size)
+    : product.sizes[0]?.id;
+
+  const selectedSize = product.sizes.find(size => size.id === selectedSizeId) || product.sizes[0];
 
   const avgRating =
     product.reviews.length > 0
@@ -47,11 +62,14 @@ export default async function ProductPage({
       NOT: { id: product.id },
     },
     take: 4,
-    include: { brand: true },
+    include: {
+      sizes: true,
+      brand: true
+    },
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8  bg-gradient-to-r from-green-50 to-emerald-50">
+    <div className="max-w-7xl mx-auto px-4 py-8 bg-gradient-to-r from-green-50 to-emerald-50">
       {/* Breadcrumbs */}
       <div className="text-sm text-gray-500 mb-6 flex items-center">
         <Link href="/" className="hover:text-green-600 transition-colors">
@@ -79,9 +97,9 @@ export default async function ProductPage({
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Image Gallery */}
-        <div className=" p-4 rounded-xl border border-gray-100">
-          <div className=" p-4 rounded-xl shadow border border-green-100">
-            <ImageGallery images={product.images} />
+        <div className="p-4 rounded-xl border border-gray-100">
+          <div className="p-4 rounded-xl shadow border border-green-100">
+            <ImageGallery images={selectedSize?.images} />
           </div>
         </div>
 
@@ -111,9 +129,9 @@ export default async function ProductPage({
               </span>
               <span className="mx-2 text-gray-300">|</span>
               <span
-                className={`text-sm font-medium ${product.stock > 0 ? "text-green-600" : "text-red-600"}`}
+                className={`text-sm font-medium ${selectedSize?.stock > 0 ? "text-green-600" : "text-red-600"}`}
               >
-                {product.stock > 0 ? "In Stock" : "Out of Stock"}
+                {selectedSize?.stock > 0 ? "In Stock" : "Out of Stock"}
               </span>
             </div>
 
@@ -132,16 +150,16 @@ export default async function ProductPage({
             <div className="mb-6">
               <div className="flex items-baseline gap-3">
                 <span className="text-3xl font-bold text-gray-900">
-                  ₹{product.price.toLocaleString()}
+                  ₹{selectedSize?.price.toFixed(2)}
                 </span>
-                {product.mrp && product.mrp > product.price && (
+                {product.mrp && product.mrp > selectedSize.price && (
                   <>
                     <span className="text-gray-500 line-through">
-                      ₹{product.mrp.toLocaleString()}
+                      ₹{product.mrp.toFixed(2)}
                     </span>
                     <span className="text-green-600 font-medium">
                       {Math.round(
-                        (1 - product.price / product.mrp) * 100
+                        (1 - selectedSize.price / product.mrp) * 100
                       )}% off
                     </span>
                   </>
@@ -157,6 +175,18 @@ export default async function ProductPage({
             <p className="text-gray-700 mb-6 leading-relaxed">
               {product.shortDescription}
             </p>
+
+            {/* Size Selector */}
+            <div className="mb-6">
+              <h3 className="font-semibold text-gray-900 mb-3 text-lg">
+                Available Sizes:
+              </h3>
+              <SizeSelector
+                sizes={product.sizes}
+                selectedSize={selectedSize}
+                productSlug={product.slug}
+              />
+            </div>
 
             {/* Key Features */}
             {product.attributes.length > 0 && (
@@ -179,7 +209,7 @@ export default async function ProductPage({
             )}
 
             {/* Add to Cart */}
-            <AddToCart product={product} />
+            <AddToCart product={product} selectedSize={selectedSize} />
           </div>
 
           {/* Benefits */}
@@ -199,7 +229,7 @@ export default async function ProductPage({
               </div>
               <div>
                 <p className="font-medium text-gray-900">Easy Returns</p>
-                <p className="text-xs text-gray-500">30 Day Policy</p>
+                <p className="text-xs text-gray-500">10 Day Policy</p>
               </div>
             </div>
             <div className="flex items-center p-3 rounded-lg border border-gray-100">
@@ -207,7 +237,7 @@ export default async function ProductPage({
                 <ShieldCheck className="text-green-600" size={20} />
               </div>
               <div>
-                <p className="font-medium text-gray-900">1 Year Warranty</p>
+                <p className="font-medium text-gray-900"> Warranty</p>
                 <p className="text-xs text-gray-500">Genuine Parts</p>
               </div>
             </div>

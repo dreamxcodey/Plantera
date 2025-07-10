@@ -2,11 +2,20 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import Image from "next/image";
 
 export default function ProductCard({ product }: { product: any }) {
   const [hovered, setHovered] = useState(false);
-  const images = product.images ?? [];
+
+  // Extract all images from all sizes
+  const allImages = product.sizes?.flatMap((size: any) => size.images || []) ?? [];
+
+  // Calculate price range display
+  const hasMultipleSizes = product.sizes && product.sizes.length > 1;
+  const minPrice = Math.min(...product.sizes.map((s: any) => s.price));
+  const maxPrice = Math.max(...product.sizes.map((s: any) => s.price));
+
+  // Calculate total stock across all sizes
+  const totalStock = product.sizes?.reduce((sum: number, size: any) => sum + (size.stock || 0), 0) ?? product.stock;
 
   return (
     <div
@@ -14,9 +23,10 @@ export default function ProductCard({ product }: { product: any }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {images.length > 0 && (
+      {/* Product Image */}
+      {allImages.length > 0 && (
         <img
-          src={hovered && images[1] ? images[1] : images[0]}
+          src={hovered && allImages[1] ? allImages[1] : allImages[0]}
           alt={product.name}
           width={400}
           height={300}
@@ -30,15 +40,50 @@ export default function ProductCard({ product }: { product: any }) {
           <h2 className="text-lg font-semibold text-green-800">
             {product.name}
           </h2>
-          <span className="text-lg font-bold text-emerald-600">
-            ₹{product.price.toFixed(2)}
-          </span>
+
+          <div className="text-right">
+            {hasMultipleSizes ? (
+              <span className="text-lg font-bold text-emerald-600">
+                ₹{minPrice.toFixed(2)} - ₹{maxPrice.toFixed(2)}
+              </span>
+            ) : (
+              <span className="text-lg font-bold text-emerald-600">
+                ₹{product.sizes[0]?.price.toFixed(2) || product.defaultPrice?.toFixed(2) || "N/A"}
+              </span>
+            )}
+            {hasMultipleSizes && (
+              <p className="text-xs text-gray-500 mt-1">{product.sizes.length} sizes available</p>
+            )}
+          </div>
         </div>
 
+        {/* {/* Brand */}
+        {/* {product.brand?.name && ( */}
+        {/*   <p className="text-sm text-gray-500 mb-2"> */}
+        {/*     Brand: <span className="font-medium">{product.brand.name}</span> */}
+        {/*   </p> */}
+        {/* )} */}
+
         {/* Description */}
-        <p className="text-gray-600 text-sm line-clamp-2 mb-2">
-          {product.description}
+        <p className="text-gray-600 text-sm line-clamp-2 mb-3">
+          {product.shortDescription}
         </p>
+
+        {/* Size Details */}
+        <div className="mb-3">
+          <p className="text-sm font-medium text-gray-700 mb-1">Available Sizes:</p>
+          <div className="flex flex-wrap gap-2">
+            {product.sizes?.map((size: any, index: number) => (
+              <div
+                key={index}
+                className="text-xs bg-gray-100 px-2 py-1 rounded border border-gray-200"
+              >
+                <span className="font-medium">{size.label}</span>
+                <span className="text-emerald-600 ml-1">(₹{size.price.toFixed(2)})</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Category & Subcategory Tags */}
         <div className="flex flex-wrap gap-2 text-xs mb-4">
@@ -56,8 +101,11 @@ export default function ProductCard({ product }: { product: any }) {
 
         {/* Stock & CTA */}
         <div className="flex justify-between items-center">
-          <span className={`text-sm font-medium ${product.stock > 0 ? "text-green-600" : "text-red-500"}`}>
-            {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+          <span
+            className={`text-sm font-medium ${totalStock > 0 ? "text-green-600" : "text-red-500"
+              }`}
+          >
+            {totalStock > 0 ? `${totalStock} in stock` : "Out of stock"}
           </span>
           <Link
             href={`/product/${product.slug}`}

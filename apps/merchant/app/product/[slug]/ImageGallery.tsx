@@ -2,7 +2,7 @@
 import { useState, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import Image from 'next/image';
-
+import type { StaticImageData } from "next/image";
 type ImageProps = string | StaticImageData;
 
 export default function ImageGallery({ images }: { images: ImageProps[] }) {

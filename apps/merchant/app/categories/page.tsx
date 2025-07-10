@@ -13,6 +13,11 @@ export default async function CategoriesPage() {
       products: {
         take: 4,
         include: {
+          sizes: {  // Changed from 'productSizes' to 'sizes' to match your schema
+            orderBy: {
+              price: 'asc' // Sort sizes by price ascending to ensure smallest price first
+            }
+          },
           category: true,
           subcategory: true,
           reviews: true
@@ -24,10 +29,15 @@ export default async function CategoriesPage() {
     }
   });
 
-  // Fetch all products for the "All Plants" section
   const allProducts = await prisma.product.findMany({
     take: 12,
     include: {
+
+      sizes: {  // Changed from 'productSizes' to 'sizes' to match your schema
+        orderBy: {
+          price: 'asc' // Sort sizes by price ascending to ensure smallest price first
+        }
+      },
       category: true,
       subcategory: true,
       reviews: true,
@@ -38,11 +48,11 @@ export default async function CategoriesPage() {
     }
   });
 
-  // Get min and max prices for filters
-  const priceRange = await prisma.product.aggregate({
-    _min: { price: true },
-    _max: { price: true },
-  });
+  // // Get min and max prices for filters
+  // const priceRange = await prisma.product.aggregate({
+  //   _min: { price: true },
+  //   _max: { price: true },
+  // });
 
   // Fetch brands for filters
   const brands = await prisma.brand.findMany();
@@ -59,12 +69,12 @@ export default async function CategoriesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Sidebar */}
         <div className="lg:col-span-1">
-          <FilterSidebar
-            categories={categories}
-            brands={brands}
-            minPrice={priceRange._min.price || 0}
-            maxPrice={priceRange._max.price || 10000}
-          />
+          {/* <FilterSidebar */}
+          {/*   categories={categories} */}
+          {/*   brands={brands} */}
+          {/*   minPrice={priceRange._min.price || 0} */}
+          {/*   maxPrice={priceRange._max.price || 10000} */}
+          {/* /> */}
         </div>
 
         {/* Main Content */}

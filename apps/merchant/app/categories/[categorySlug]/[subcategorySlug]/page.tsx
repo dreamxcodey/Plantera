@@ -1,7 +1,6 @@
 import prisma from '@repo/db';
 import { notFound } from 'next/navigation';
 import ProductCard from '../../../componets/ProductCard';
-import FilterSidebar from '../../../componets/FilterSideBar';
 import Link from 'next/link';
 
 export default async function SubcategoryPage({
@@ -32,8 +31,6 @@ export default async function SubcategoryPage({
     : Array.isArray(searchParams.brand)
       ? searchParams.brand
       : [];
-  const minPrice = searchParams.minPrice ? Number(searchParams.minPrice) : undefined;
-  const maxPrice = searchParams.maxPrice ? Number(searchParams.maxPrice) : undefined;
   const inStock = searchParams.inStock === 'true';
   const ratingFilter = searchParams.rating ? Number(searchParams.rating) : undefined;
 
@@ -42,10 +39,6 @@ export default async function SubcategoryPage({
     where: {
       subcategory: { slug: params.subcategorySlug },
       brand: brandFilter.length > 0 ? { slug: { in: brandFilter } } : undefined,
-      price: {
-        gte: minPrice,
-        lte: maxPrice,
-      },
       stock: inStock ? { gt: 0 } : undefined,
       reviews: ratingFilter ? {
         some: {
@@ -54,6 +47,11 @@ export default async function SubcategoryPage({
       } : undefined,
     },
     include: {
+      sizes: {  // Changed from 'productSizes' to 'sizes' to match your schema
+        orderBy: {
+          price: 'asc' // Sort sizes by price ascending to ensure smallest price first
+        }
+      },
       category: true,
       subcategory: true,
       brand: true,
@@ -62,13 +60,6 @@ export default async function SubcategoryPage({
     orderBy: {
       createdAt: 'desc'
     }
-  });
-
-  // Get min and max prices for filters
-  const priceRange = await prisma.product.aggregate({
-    where: { subcategory: { slug: params.subcategorySlug } },
-    _min: { price: true },
-    _max: { price: true },
   });
 
   // Fetch brands for this subcategory
@@ -103,14 +94,14 @@ export default async function SubcategoryPage({
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Sidebar */}
-        <div className="lg:col-span-1">
-          <FilterSidebar
-            categories={[category]}
-            brands={brands}
-            minPrice={priceRange._min.price || 0}
-            maxPrice={priceRange._max.price || 10000}
-          />
-        </div>
+        {/* <div className="lg:col-span-1"> */}
+        {/*   <FilterSidebar */}
+        {/*     categories={[category]} */}
+        {/*     brands={brands} */}
+        {/*     minPrice={priceRange._min.price || 0} */}
+        {/*     maxPrice={priceRange._max.price || 10000} */}
+        {/*   /> */}
+        {/* </div> */}
 
         {/* Main Content */}
         <div className="lg:col-span-3">

@@ -38,7 +38,7 @@ export default function Navbar() {
             Shop
           </a>
           <Link
-            href="/category"
+            href="/categories"
             className="text-green-800 font-medium hover:text-green-600"
           >
             Categories

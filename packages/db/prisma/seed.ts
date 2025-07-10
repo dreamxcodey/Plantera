@@ -44,18 +44,14 @@ async function main() {
     where: { slug: "neem-plant" },
     update: {},
     create: {
-      name: "Neem Plant",
+      name: "Neem Plant (Azadirachta indica)",
       slug: "neem-plant",
-      price: 499,
+      defaultPrice: 499,
       mrp: 799,
       stock: 20,
       shortDescription: "Large medicinal plant with natural pest resistance",
       fullDescription:
         "The Neem plant is known for its medicinal properties and natural pest resistance. This large specimen comes in a 12-inch pot and stands 3-4 feet tall. Ideal for outdoor gardens in warm climates.",
-      images: [
-        "https://as1.ftcdn.net/v2/jpg/03/11/32/18/1000_F_311321897_oeJUWMM0PhaR3HqpPtWPMGh6BW0746bi.jpg",
-        "https://m.media-amazon.com/images/I/61QTnZ3ldLL._UF1000,1000_QL80_.jpg",
-      ],
       tags: ["neem", "outdoor", "large", "medicinal"],
       userId: seller.id,
       categoryId: category.id,
@@ -71,6 +67,47 @@ async function main() {
       },
     },
   });
+
+  // ✅ Fixed images key + using create instead of createMany
+  const sizes = [
+    {
+      dimension: "8x10",
+      label: "small",
+      price: 99,
+      stock: 10,
+      productId: neemProduct.id,
+      images: [
+        "https://m.media-amazon.com/images/I/41cUNNALHWL.jpg",
+        "https://m.media-amazon.com/images/I/713i7wgMS2L._SL1000_.jpg",
+      ],
+    },
+    {
+      dimension: "15x16",
+      label: "medium",
+      price: 259,
+      stock: 15,
+      productId: neemProduct.id,
+      images: [
+        "https://www.toothmountainnursery.com/wp-content/uploads/2020/03/Neem.jpg",
+        "https://manbhawannursery.in/cdn/shop/files/neem-tree-507.webp?v=1742824601",
+      ],
+    },
+    {
+      dimension: "21x21",
+      label: "large",
+      price: 599,
+      stock: 5,
+      productId: neemProduct.id,
+      images: [
+        "https://m.media-amazon.com/images/I/517SDVgeO2L.jpg",
+        "https://m.media-amazon.com/images/I/71X9YyQYbTL._AC_UF1000,1000_QL80_.jpg",
+      ],
+    },
+  ];
+
+  for (const size of sizes) {
+    await prisma.productSize.create({ data: size });
+  }
 
   await prisma.attribute.createMany({
     data: [
@@ -103,9 +140,7 @@ async function main() {
 }
 
 main()
-  .then(() => {
-    console.log("🌱 Seed completed successfully");
-  })
+  .then(() => console.log("🌱 Seed completed successfully"))
   .catch((e) => {
     console.error("❌ Seed failed", e);
     process.exit(1);
