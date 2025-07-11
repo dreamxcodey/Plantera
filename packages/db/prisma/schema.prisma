@@ -10,6 +10,7 @@ datasource db {
 model Category {
   id            Int           @id @default(autoincrement())
   name          String        @unique
+  image         String?
   slug          String        @unique
   subcategories Subcategory[]
   products      Product[]
@@ -18,6 +19,7 @@ model Category {
 model Subcategory {
   id         Int       @id @default(autoincrement())
   name       String
+  image      String?
   slug       String    @unique
   category   Category  @relation(fields: [categoryId], references: [id])
   categoryId Int

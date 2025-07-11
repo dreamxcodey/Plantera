@@ -1,6 +1,8 @@
+// 'use client'
 import "./globals.css";
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import Navbar from "./componets/navbar";
 
 const geist = Geist({ subsets: ["latin"] });
 
@@ -16,8 +18,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-
       <body className={`${geist.className} bg-gradient-to-r from-green-50 to-emerald-50`}>
+
+        <Navbar />
         {children}
       </body>
     </html>
