@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-
+import Image from "next/image";
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showCategories, setShowCategories] = useState(true);
@@ -168,9 +168,9 @@ export default function Navbar() {
     <div ref={navbarRef}>
       {/* Main Navbar */}
       <motion.header
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
+        // initial={{ y: -100 }}
+        // animate={{ y: 0 }}
+        // transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
         className={`fixed w-full z-50 transition-all duration-300 ${isScrolled
           ? "bg-gradient-to-r from-green-100 mask-b-to-emerald-50 shadow-lg py-2"
           : "bg-gradient-to-b from-green-200 mask-b-to-emerald-100 backdrop-blur-sm py-3"
@@ -237,7 +237,7 @@ export default function Navbar() {
               <input
                 type="text"
                 placeholder="Search plants, seeds, tools..."
-                className="bg-transparent outline-none w-48 text-green-800 placeholder-emerald-600/70"
+                className="bg-transparent outline-none w-58 text-green-800 placeholder-emerald-600/70"
               />
               <button className="p-2 text-emerald-700 hover:text-emerald-900 rounded-full transition-colors">
                 <svg

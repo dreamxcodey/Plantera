@@ -5,13 +5,13 @@ import Image from 'next/image';
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-green-50 flex flex-col items-center justify-center text-center px-4 py-12">
+    <div className=" bg-green-50 flex flex-col items-center justify-center text-center px-4 py-12">
       <Image
-        src="/assets/404-plant.svg" // 🪴 Replace with your actual SVG/PNG path
+        src="/404.png" // 🪴 Replace with your actual SVG/PNG path
         alt="Page not found"
         width={300}
         height={300}
-        className="mb-6"
+        className=""
       />
       <h1 className="text-5xl font-extrabold text-green-800 mb-4">Oops! Page not found</h1>
       <p className="text-lg text-green-700 max-w-md mb-6">
