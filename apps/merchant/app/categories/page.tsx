@@ -48,12 +48,17 @@ export default async function CategoriesPage() {
     }
   });
 
-  // // Get min and max prices for filters
-  // const priceRange = await prisma.product.aggregate({
-  //   _min: { price: true },
-  //   _max: { price: true },
-  // });
-
+  const uniqueTags = Array.from(
+    new Set(allTags.flatMap(p => p.tags).filter(Boolean)
+    ));
+  const minPrice = Math.min(
+    sizePrices._min.price || Infinity,
+    defaultPrices._min.defaultPrice || Infinity
+  );
+  const maxPrice = Math.max(
+    sizePrices._max.price || 0,
+    defaultPrices._max.defaultPrice || 0
+  );
   // Fetch brands for filters
   const brands = await prisma.brand.findMany();
 
@@ -68,13 +73,14 @@ export default async function CategoriesPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Sidebar */}
-        <div className="lg:col-span-1">
-          {/* <FilterSidebar */}
-          {/*   categories={categories} */}
-          {/*   brands={brands} */}
-          {/*   minPrice={priceRange._min.price || 0} */}
-          {/*   maxPrice={priceRange._max.price || 10000} */}
-          {/* /> */}
+        <div className="w-full md:w-64">
+          <FilterSidebar
+            categories={categories}
+            brands={brands}
+            minPrice={minPrice}
+            maxPrice={maxPrice}
+            tags={uniqueTags}
+          />
         </div>
 
         {/* Main Content */}
