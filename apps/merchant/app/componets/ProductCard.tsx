@@ -77,7 +77,14 @@ export default function ProductCard({ product }: { product: any }) {
                 key={index}
                 className="text-xs bg-emerald-50 text-emerald-800 px-2 py-1 rounded-full border border-emerald-100"
               >
-                {size.label}
+
+                {size.label === "S"
+                  ? "small"
+                  : size.label === "M"
+                    ? "medium"
+                    : size.label === "L"
+                      ? "large"
+                      : size.label}
               </div>
             ))}
             {product.sizes?.length > 4 && (

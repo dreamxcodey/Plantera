@@ -537,7 +537,8 @@ export default function AddPlant() {
               value={formData.subcategoryId}
               onChange={handleChange}
               disabled={!formData.categoryId}
-              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${!formData.categoryId ? 'bg-gray-100' : ''} border-green-200`}
+              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${!formData.categoryId ? 'bg-gray-100' : ''
+                } border-green-200`}
             >
               <option value="">Select existing subcategory</option>
               {subcategories.map((sub: any) => (
@@ -551,7 +552,7 @@ export default function AddPlant() {
                 placeholder="Create new subcategory"
                 value={formData.newSubcategory}
                 onChange={handleChange}
-                disabled={!formData.categoryId}
+                // disabled={!formData.categoryId}
                 className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-300 focus:border-green-500 ${!formData.categoryId ? 'bg-gray-100' : ''} border-green-200`}
               />
             </div>

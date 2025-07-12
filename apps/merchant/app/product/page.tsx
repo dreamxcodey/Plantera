@@ -1,101 +1,16 @@
-// app/products/page.tsx
-import Link from "next/link";
-import prisma from "@repo/db";
-import ProductCard from "../componets/ProductCard"
-import FilterSidebar from "../componets/FilterSideBar"
+import prisma from '@repo/db';
+import CategoryCard from '../componets/categoryCard';
+import ProductCard from '../componets/ProductCard';
+import { FilterSidebar } from '../componets/FilterSideBar';
 
-export default async function ProductsPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  // Parse filter parameters
-  const selectedCategories = searchParams.category
-    ? Array.isArray(searchParams.category)
-      ? searchParams.category
-      : [searchParams.category]
-    : [];
-  const selectedBrands = searchParams.brand
-    ? Array.isArray(searchParams.brand)
-      ? searchParams.brand
-      : [searchParams.brand]
-    : [];
-  const minPriceParam = searchParams.minPrice
-    ? parseFloat(searchParams.minPrice as string)
-    : undefined;
-  const maxPriceParam = searchParams.maxPrice
-    ? parseFloat(searchParams.maxPrice as string)
-    : undefined;
-  const inStock = searchParams.inStock === "true";
-
-
-
-  const selectedTags = searchParams.tag
-    ? Array.isArray(searchParams.tag)
-      ? searchParams.tag
-      : [searchParams.tag]
-    : [];
-
-  const selectedSubcategories = searchParams.subcategory
-    ? Array.isArray(searchParams.subcategory)
-      ? searchParams.subcategory
-      : [searchParams.subcategory]
-    : [];
-
-  // Build where clause for filtering
-  const where: any = {};
-
-  if (selectedCategories.length > 0) {
-    where.category = { slug: { in: selectedCategories } };
-  }
-
-  if (selectedBrands.length > 0) {
-    where.brand = { slug: { in: selectedBrands } };
-  }
-
-  if (selectedSubcategories.length > 0) {
-    where.subcategory = { slug: { in: selectedSubcategories } };
-  }
-
-  if (selectedTags.length > 0) {
-    where.tags = { hasEvery: selectedTags };
-  }
-  // Price filter based on product sizes
-  if (minPriceParam !== undefined || maxPriceParam !== undefined) {
-    where.OR = [
-      // Products with sizes in the price range
-      {
-        sizes: {
-          some: {
-            price: {
-              gte: minPriceParam || 0,
-              lte: maxPriceParam || Number.MAX_SAFE_INTEGER,
-            },
-          },
-        },
-      },
-      // Products without sizes but with defaultPrice in range
-      {
-        sizes: { none: {} },
-        defaultPrice: {
-          gte: minPriceParam || 0,
-          lte: maxPriceParam || Number.MAX_SAFE_INTEGER,
-        },
-      },
-    ];
-  }
-
-  // Stock availability filter
-  if (inStock) {
-    where.OR = [
-      { sizes: { some: { stock: { gt: 0 } } } },
-      { sizes: { none: {} }, stock: { gt: 0 } },
-    ];
-  }
-
-  // Fetch products with filtering
+export default async function CategoriesPage(
+  {
+    searchParams,
+  }: {
+    searchParams: { [key: string]: string | string[] | undefined };
+  }) {
+  // Fetch all categories with products count
   const products = await prisma.product.findMany({
-    where,
     include: {
       sizes: { orderBy: { price: "asc" } },
       category: true,
@@ -105,96 +20,111 @@ export default async function ProductsPage({
     },
     orderBy: { createdAt: "desc" },
   });
-
-  // Get categories and brands for sidebar
   const [categories, brands, allTags] = await Promise.all([
     prisma.category.findMany({
       include: { _count: { select: { products: true } } },
     }),
     prisma.brand.findMany(),
     prisma.product.findMany({
-      distinct: ['tags'],
-      select: { tags: true }
-    })
+      select: { tags: true },
+    }),
   ]);
-  // Calculate global price range
-  const sizePrices = await prisma.productSize.aggregate({
-    _min: { price: true },
-    _max: { price: true },
-  });
 
-  const defaultPrices = await prisma.product.aggregate({
-    _min: { defaultPrice: true },
-    _max: { defaultPrice: true },
-    where: { sizes: { none: {} }, defaultPrice: { not: null } },
-  });
+  // Get price range
+  const priceRange = {
+    min: 99, // Calculate this from your data
+    max: 1000, // Calculate this from your data
+  };
 
   const uniqueTags = Array.from(
-    new Set(allTags.flatMap(p => p.tags).filter(Boolean)
-    ));
-  const minPrice = Math.min(
-    sizePrices._min.price || Infinity,
-    defaultPrices._min.defaultPrice || Infinity
+    new Set(allTags.flatMap(p => p.tags).filter(Boolean))
   );
-  const maxPrice = Math.max(
-    sizePrices._max.price || 0,
-    defaultPrices._max.defaultPrice || 0
-  );
+  const allProducts = await prisma.product.findMany({
+    take: 12,
+    include: {
+
+      sizes: {  // Changed from 'productSizes' to 'sizes' to match your schema
+        orderBy: {
+          price: 'asc' // Sort sizes by price ascending to ensure smallest price first
+        }
+      },
+      category: true,
+      subcategory: true,
+      reviews: true,
+      brand: true
+    },
+    orderBy: {
+      createdAt: 'desc'
+    }
+  });
+
+  // Fetch brands for filters
 
   return (
-    <div className="mt-16 max-w-6xl mx-20 ">
+    <div className="max-w-7xl pt-10 mx-auto">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-green-800 mb-2">Plant Categories</h1>
+        <p className="text-gray-600">
+          Explore our wide variety of plant categories and find the perfect plants for your home
+        </p>
+      </div>
 
-      <div className="flex flex-col md:flex-row gap-8">
-        {/* Filter Sidebar */}
-        <div className="w-full md:w-64">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* Sidebar */}
+        <div className="lg:col-span-1">
           <FilterSidebar
-            categories={categories}
-            brands={brands}
-            minPrice={minPrice}
-            maxPrice={maxPrice}
-            tags={uniqueTags}
+            filterOptions={{
+              categories: categories.map(c => ({
+                id: c.id,
+                name: c.name,
+                slug: c.slug,
+                count: c._count.products,
+              })),
+              brands: brands.map(b => ({
+                id: b.id,
+                name: b.name,
+                slug: b.slug,
+              })),
+              tags: uniqueTags,
+              priceRange,
+            }}
+            searchParams={searchParams}
           />
         </div>
 
-        {/* Product Grid */}
-        <div className="flex-1">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map((product) => {
-              // Calculate price display
-              const hasSizes = product.sizes.length > 0;
-              const minPrice = hasSizes
-                ? Math.min(...product.sizes.map((size) => size.price))
-                : product.defaultPrice || 0;
-              const maxPrice = hasSizes
-                ? Math.max(...product.sizes.map((size) => size.price))
-                : product.defaultPrice || 0;
-              const priceDisplay = hasSizes
-                ? minPrice === maxPrice
-                  ? `₹${minPrice}`
-                  : `₹${minPrice} - ₹${maxPrice}`
-                : product.defaultPrice
-                  ? `₹${product.defaultPrice}`
-                  : "Price not available";
-
-              // Calculate total stock
-              const totalStock = hasSizes
-                ? product.sizes.reduce((sum, size) => sum + size.stock, 0)
-                : product.stock;
-
-              return (
-                <ProductCard
-                  key={product.id}
-                  product={{
-                    ...product,
-                    priceDisplay,
-                    totalStock,
-                    brandName: product.brand?.name || "",
-                    reviewCount: product._count.reviews,
+        {/* Main Content */}
+        <div className="lg:col-span-3">
+          {/* Categories Grid */}
+          <section className="mb-12">
+            <h2 className="text-2xl font-semibold text-green-800 mb-6">Browse Categories</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {categories.map(category => (
+                <CategoryCard
+                  key={category.id}
+                  category={{
+                    ...category,
+                    products: category._count.products
                   }}
                 />
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          </section>
+
+          {/* All Plants Section */}
+          <section>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-semibold text-green-800">All Plants</h2>
+              <div className="text-sm text-emerald-600">
+                Showing {allProducts.length} plants
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {allProducts.map(product => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          </section>
         </div>
       </div>
     </div>

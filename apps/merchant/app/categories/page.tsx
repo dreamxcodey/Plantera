@@ -1,34 +1,44 @@
 import prisma from '@repo/db';
 import CategoryCard from '../componets/categoryCard';
 import ProductCard from '../componets/ProductCard';
-import FilterSidebar from '../componets/FilterSideBar';
+import { FilterSidebar } from '../componets/FilterSideBar';
 
-export default async function CategoriesPage() {
+export default async function CategoriesPage(
+  {
+    searchParams,
+  }: {
+    searchParams: { [key: string]: string | string[] | undefined };
+  }) {
   // Fetch all categories with products count
-  const categories = await prisma.category.findMany({
+  const products = await prisma.product.findMany({
     include: {
-      _count: {
-        select: { products: true }
-      },
-      products: {
-        take: 4,
-        include: {
-          sizes: {  // Changed from 'productSizes' to 'sizes' to match your schema
-            orderBy: {
-              price: 'asc' // Sort sizes by price ascending to ensure smallest price first
-            }
-          },
-          category: true,
-          subcategory: true,
-          reviews: true
-        }
-      }
+      sizes: { orderBy: { price: "asc" } },
+      category: true,
+      subcategory: true,
+      brand: true,
+      _count: { select: { reviews: true } },
     },
-    orderBy: {
-      name: 'asc'
-    }
+    orderBy: { createdAt: "desc" },
   });
+  const [categories, brands, allTags] = await Promise.all([
+    prisma.category.findMany({
+      include: { _count: { select: { products: true } } },
+    }),
+    prisma.brand.findMany(),
+    prisma.product.findMany({
+      select: { tags: true },
+    }),
+  ]);
 
+  // Get price range
+  const priceRange = {
+    min: 99, // Calculate this from your data
+    max: 1000, // Calculate this from your data
+  };
+
+  const uniqueTags = Array.from(
+    new Set(allTags.flatMap(p => p.tags).filter(Boolean))
+  );
   const allProducts = await prisma.product.findMany({
     take: 12,
     include: {
@@ -48,19 +58,7 @@ export default async function CategoriesPage() {
     }
   });
 
-  const uniqueTags = Array.from(
-    new Set(allTags.flatMap(p => p.tags).filter(Boolean)
-    ));
-  const minPrice = Math.min(
-    sizePrices._min.price || Infinity,
-    defaultPrices._min.defaultPrice || Infinity
-  );
-  const maxPrice = Math.max(
-    sizePrices._max.price || 0,
-    defaultPrices._max.defaultPrice || 0
-  );
   // Fetch brands for filters
-  const brands = await prisma.brand.findMany();
 
   return (
     <div className="max-w-7xl pt-10 mx-auto">
@@ -73,13 +71,24 @@ export default async function CategoriesPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Sidebar */}
-        <div className="w-full md:w-64">
+        <div className="lg:col-span-1">
           <FilterSidebar
-            categories={categories}
-            brands={brands}
-            minPrice={minPrice}
-            maxPrice={maxPrice}
-            tags={uniqueTags}
+            filterOptions={{
+              categories: categories.map(c => ({
+                id: c.id,
+                name: c.name,
+                slug: c.slug,
+                count: c._count.products,
+              })),
+              brands: brands.map(b => ({
+                id: b.id,
+                name: b.name,
+                slug: b.slug,
+              })),
+              tags: uniqueTags,
+              priceRange,
+            }}
+            searchParams={searchParams}
           />
         </div>
 
