@@ -1,16 +1,16 @@
 "use client";
 
-import HomeHero from "../components/homehero";
-import Navbar from "../components/navbar";
-import PlantSection from "../components/plantsection";
-import Testimonials from "../components/testimonals";
+import HomeHero from "./components/homehero";
+// import Navbar from "./components/navbar";
+import PlantSection from "./components/plantsection";
+import Testimonials from "./components/testimonals";
 
 export default function Home() {
 
 
   return (
     <div className="min-h-screen bg-[#F9FBF7]">
-      <Navbar />
+      {/* <Navbar /> */}
 
       <HomeHero />
       <PlantSection />
@@ -22,7 +22,7 @@ export default function Home() {
               Why Choose Plantera
             </h2>
             <p className="text-green-700 max-w-2xl mx-auto">
-              We're passionate about helping you create a greener, healthier
+              Were passionate about helping you create a greener, healthier
               living space with our premium plants and expert guidance.
             </p>
           </div>
@@ -148,7 +148,7 @@ export default function Home() {
                 <h2 className="text-2xl font-bold">Plantera</h2>
               </div>
               <p className="text-green-200 mb-6">
-                Bringing nature's beauty into your home with premium plants and
+                Bringing natures beauty into your home with premium plants and
                 expert guidance.
               </p>
               <div className="flex space-x-4">
