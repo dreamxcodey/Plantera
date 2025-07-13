@@ -16,7 +16,7 @@
     "prisma": "^6.8.0"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "prisma generate &&  tsc",
     "dev": "ts-node ./src/index.ts",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
