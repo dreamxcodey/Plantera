@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showCategories, setShowCategories] = useState(true);
@@ -541,7 +540,6 @@ export default function Navbar() {
         </div>
       </motion.div>
 
-      {/* Spacer to prevent content from being hidden under fixed navbar */}
       <div className="h-28 md:h-32"></div>
     </div>
   );

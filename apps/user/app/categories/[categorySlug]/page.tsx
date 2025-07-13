@@ -1,7 +1,7 @@
 import prisma from '@repo/db'
 import { notFound } from 'next/navigation';
 import ProductCard from '../../components/ProductCard';
-import SubcategoryCard from '../../components/subCategoryCard';
+import CategoryCard from '../../components/categoryCard';
 
 export default async function CategoryPage({
   params,
@@ -76,7 +76,7 @@ export default async function CategoryPage({
   // });
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto mt-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-green-800 mb-2">{category.name}</h1>
         <p className="text-gray-600">
@@ -99,16 +99,15 @@ export default async function CategoryPage({
         <div className="lg:col-span-3">
           {/* Subcategories */}
           {category.subcategories.length > 0 && (
-            <section className="mb-8">
-              <h2 className="text-xl font-semibold text-green-800 mb-4">Subcategories</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {category.subcategories.map(subcategory => (
-                  <SubcategoryCard
-                    key={subcategory.id}
-                    subcategory={{
-                      ...subcategory,
-                      category: category,
-                      products: subcategory._count.products
+            <section className="mb-12">
+              <h2 className="text-2xl font-semibold text-green-800 mb-6">Browse Categories</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {category.subcategories.map(category => (
+                  <CategoryCard
+                    key={category.id}
+                    category={{
+                      ...category,
+                      products: category._count.products
                     }}
                   />
                 ))}
