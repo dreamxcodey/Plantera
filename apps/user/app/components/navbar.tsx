@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
+
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showCategories, setShowCategories] = useState(true);
@@ -168,24 +168,21 @@ export default function Navbar() {
     <div ref={navbarRef}>
       {/* Main Navbar */}
       <motion.header
-        // initial={{ y: -100 }}
-        // animate={{ y: 0 }}
-        // transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
         className={`fixed w-full z-50 transition-all duration-300 ${isScrolled
-          ? "bg-gradient-to-r from-green-100 mask-b-to-emerald-50 shadow-lg py-2"
-          : "bg-gradient-to-b from-green-200 mask-b-to-emerald-100 backdrop-blur-sm py-3"
+            ? "bg-gradient-to-r from-green-100 to-emerald-50 shadow-lg py-1 md:py-2"
+            : "bg-gradient-to-b from-green-200 to-emerald-100 backdrop-blur-sm py-2 md:py-3"
           }`}
       >
-        <div className="container mx-auto px-4 flex justify-between items-center">
+        <div className="container mx-auto px-3 md:px-4 flex justify-between items-center">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 group">
+          <Link href="/" className="flex items-center space-x-1 md:space-x-2 group">
             <motion.div
               whileHover={{ rotate: 15, scale: 1.1 }}
-              className="w-10 h-10 bg-gradient-to-r from-green-600 to-emerald-500 rounded-full flex items-center justify-center group-hover:from-green-700 group-hover:to-emerald-600 transition-colors shadow-lg"
+              className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-green-600 to-emerald-500 rounded-full flex items-center justify-center group-hover:from-green-700 group-hover:to-emerald-600 transition-colors shadow-lg"
             >
-              <span className="text-white font-bold text-xl">P</span>
+              <span className="text-white font-bold text-lg md:text-xl">P</span>
             </motion.div>
-            <h1 className="text-2xl font-bold text-green-800 group-hover:text-emerald-700 transition-colors">
+            <h1 className="text-xl md:text-2xl font-bold text-green-800 group-hover:text-emerald-700 transition-colors">
               Plantera
             </h1>
           </Link>
@@ -231,35 +228,10 @@ export default function Navbar() {
           </nav>
 
           {/* Action Icons */}
-          <div className="flex items-center space-x-3">
-            {/* Search Bar (Desktop) */}
-            <div className="hidden md:flex items-center bg-emerald-50 rounded-full pl-4 pr-2 py-1 transition-all duration-300 shadow-inner">
-              <input
-                type="text"
-                placeholder="Search plants, seeds, tools..."
-                className="bg-transparent outline-none w-58 text-green-800 placeholder-emerald-600/70"
-              />
-              <button className="p-2 text-emerald-700 hover:text-emerald-900 rounded-full transition-colors">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </button>
-            </div>
-
+          <div className="flex items-center space-x-1 md:space-x-3">
             {/* Mobile Search Toggle */}
             <button
-              className="md:hidden p-2 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 rounded-full transition-colors"
+              className="p-1.5 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 rounded-full transition-colors"
               onClick={() => setIsSearchOpen(!isSearchOpen)}
               aria-label="Search"
             >
@@ -280,7 +252,7 @@ export default function Navbar() {
             </button>
 
             <button
-              className="p-2 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 rounded-full transition-colors relative"
+              className="p-1.5 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 rounded-full transition-colors relative"
               aria-label="Cart"
             >
               <svg
@@ -304,7 +276,7 @@ export default function Navbar() {
 
             <Link
               href="/account"
-              className="p-2 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 rounded-full transition-colors"
+              className="p-1.5 text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 rounded-full transition-colors"
               aria-label="Account"
             >
               <svg
@@ -325,7 +297,7 @@ export default function Navbar() {
 
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden p-2 text-emerald-700 hover:bg-emerald-50 rounded-lg ml-2"
+              className="md:hidden p-1.5 text-emerald-700 hover:bg-emerald-50 rounded-lg ml-1"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label={isMenuOpen ? "Close menu" : "Open menu"}
             >
@@ -370,14 +342,14 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden container mx-auto px-4 py-3"
+            className="md:hidden px-3 py-2"
           >
-            <div className="flex items-center bg-emerald-50 rounded-full px-4 py-2 shadow-inner">
+            <div className="flex items-center bg-emerald-50 rounded-full px-3 py-1.5 shadow-inner">
               <input
                 ref={searchRef}
                 type="text"
-                placeholder="Search plants, seeds, tools..."
-                className="bg-transparent outline-none w-full text-green-800 placeholder-emerald-600/70"
+                placeholder="Search plants, seeds..."
+                className="bg-transparent outline-none w-full text-green-800 placeholder-emerald-600/70 text-sm"
               />
               <button
                 className="p-1 text-emerald-700 hover:text-emerald-900 rounded-full transition-colors"
@@ -401,72 +373,106 @@ export default function Navbar() {
             </div>
           </motion.div>
         )}
+      </motion.header>
 
-        {/* Mobile Navigation */}
-        <AnimatePresence>
-          {isMenuOpen && (
+      {/* Mobile Navigation Overlay */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="md:hidden fixed inset-0 bg-black/60 z-50"
+            onClick={() => setIsMenuOpen(false)}
+          >
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-white border-t border-emerald-100"
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 30 }}
+              className="absolute right-0 top-0 h-full w-4/5 max-w-sm bg-white shadow-xl"
+              onClick={e => e.stopPropagation()}
             >
-              <div className="container mx-auto px-4 py-3 flex flex-col space-y-2">
-                <Link
-                  href="/"
-                  className="px-4 py-3 text-emerald-800 font-medium hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                >
-                  Home
+              <div className="p-4 border-b border-emerald-100 flex justify-between items-center">
+                <Link href="/" className="flex items-center" onClick={() => setIsMenuOpen(false)}>
+                  <div className="w-8 h-8 bg-gradient-to-r from-green-600 to-emerald-500 rounded-full flex items-center justify-center">
+                    <span className="text-white font-bold">P</span>
+                  </div>
+                  <h1 className="text-xl font-bold text-green-800 ml-2">
+                    Plantera
+                  </h1>
                 </Link>
-                <Link
-                  href="/shop"
-                  className="px-4 py-3 text-emerald-800 font-medium hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                <button
+                  onClick={() => setIsMenuOpen(false)}
+                  className="p-2 text-emerald-700"
                 >
-                  Shop
-                </Link>
-                <Link
-                  href="/categories"
-                  className="px-4 py-3 text-emerald-800 font-medium hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                >
-                  Categories
-                </Link>
-                <Link
-                  href="/about"
-                  className="px-4 py-3 text-emerald-800 font-medium hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                >
-                  About
-                </Link>
-                <Link
-                  href="/contact"
-                  className="px-4 py-3 text-emerald-800 font-medium hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                >
-                  Contact
-                </Link>
-                <div className="flex space-x-4 pt-2 pb-3 justify-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="overflow-y-auto h-[calc(100vh-4rem)] py-4">
+                <div className="mb-6">
+                  {[
+                    { name: "Home", path: "/" },
+                    { name: "Shop", path: "/shop" },
+                    { name: "Categories", path: "/categories" },
+                    { name: "About", path: "/about" },
+                    { name: "Contact", path: "/contact" },
+                  ].map((item) => (
+                    <Link
+                      key={item.path}
+                      href={item.path}
+                      className={`block px-6 py-3 text-lg ${pathname === item.path
+                          ? "text-emerald-700 bg-emerald-50 font-semibold"
+                          : "text-green-800 hover:bg-emerald-50"
+                        }`}
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
+                </div>
+
+                <div className="border-t border-emerald-100 pt-4 px-6">
                   <Link
                     href="/account"
-                    className="flex items-center text-emerald-800 px-4 py-2 font-medium hover:bg-emerald-50 rounded-lg"
+                    className="flex items-center py-3 text-green-800 border-b border-emerald-100"
+                    onClick={() => setIsMenuOpen(false)}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    Account
+                    My Account
                   </Link>
                   <Link
                     href="/cart"
-                    className="flex items-center text-emerald-800 px-4 py-2 font-medium hover:bg-emerald-50 rounded-lg"
+                    className="flex items-center py-3 text-green-800"
+                    onClick={() => setIsMenuOpen(false)}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
-                    Cart (3)
+                    My Cart (3)
                   </Link>
                 </div>
               </div>
             </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.header>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Categories Bar */}
       <motion.div
@@ -475,18 +481,18 @@ export default function Navbar() {
           opacity: showCategories ? 1 : 0
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className={`fixed top-16 md:top-20 w-full bg-gradient-to-r from-emerald-50 to-green-50 z-40 shadow-sm border-b border-emerald-100`}
+        className={`fixed top-14 md:top-20 w-full bg-gradient-to-r from-emerald-50 to-green-50 z-40 shadow-sm border-b border-emerald-100`}
       >
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex flex-wrap gap-2 md:gap-4 justify-center">
+        <div className="container mx-auto px-3 md:px-4 py-2">
+          <div className="flex overflow-x-auto pb-1 md:pb-0 space-x-2 md:space-x-4 hide-scrollbar">
             {mainCategories.map((category, index) => (
-              <div key={index} className="group relative">
+              <div key={index} className="flex-shrink-0 group relative">
                 <button
-                  className="flex items-center px-3 py-1.5 text-emerald-800 font-medium hover:text-emerald-700 hover:bg-white rounded-lg transition-colors whitespace-nowrap border border-emerald-200 shadow-sm"
+                  className="flex items-center px-2.5 py-1 md:px-3 md:py-1.5 text-sm md:text-base text-emerald-800 font-medium hover:text-emerald-700 hover:bg-white rounded-lg transition-colors whitespace-nowrap border border-emerald-200 shadow-sm"
                   onClick={() => setActiveCategory(activeCategory === index ? null : index)}
                 >
                   {category.icon}
-                  {category.name}
+                  <span className="hidden sm:inline">{category.name}</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className={`h-4 w-4 ml-1 transition-transform ${activeCategory === index ? 'rotate-180' : ''}`}
@@ -498,11 +504,58 @@ export default function Navbar() {
                   </svg>
                 </button>
 
+                {/* Mobile dropdown - Full width */}
                 {activeCategory === index && (
                   <motion.div
+                    className="md:hidden fixed left-0 top-14 w-full bg-white border-t border-emerald-100 shadow-lg z-50"
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                  >
+                    <div className="container mx-auto py-3 max-h-[60vh] overflow-y-auto">
+                      <div className="flex justify-between items-center px-4 pb-2">
+                        <h3 className="font-bold text-emerald-800">{category.name}</h3>
+                        <button
+                          onClick={() => setActiveCategory(null)}
+                          className="p-1 text-emerald-700"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-6 w-6"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 px-2">
+                        {category.subcategories.map((sub, subIndex) => (
+                          <Link
+                            key={subIndex}
+                            href={`/category/${sub.toLowerCase().replace(/\s+/g, '-')}`}
+                            className="block px-3 py-2 text-sm text-emerald-700 hover:bg-emerald-50 rounded-lg"
+                            onClick={() => setActiveCategory(null)}
+                          >
+                            {sub}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Desktop dropdown */}
+                {activeCategory === index && (
+                  <motion.div
+                    className="hidden md:block absolute left-0 mt-1 w-64 bg-white border border-emerald-100 rounded-lg shadow-lg z-50"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="absolute left-0 mt-1 w-64 bg-white border border-emerald-100 rounded-lg shadow-lg z-50"
                   >
                     <div className="py-2 max-h-80 overflow-y-auto">
                       {category.subcategories.map((sub, subIndex) => (
@@ -510,6 +563,7 @@ export default function Navbar() {
                           key={subIndex}
                           href={`/category/${sub.toLowerCase().replace(/\s+/g, '-')}`}
                           className="block px-4 py-2 text-sm text-emerald-700 hover:bg-emerald-50 hover:text-emerald-900 transition-colors"
+                          onClick={() => setActiveCategory(null)}
                         >
                           {sub}
                         </Link>
@@ -521,28 +575,38 @@ export default function Navbar() {
             ))}
             <Link
               href="/buy-again"
-              className="flex items-center px-3 py-1.5 text-emerald-800 font-medium hover:text-emerald-700 hover:bg-white rounded-lg transition-colors whitespace-nowrap border border-emerald-200 shadow-sm"
+              className="flex-shrink-0 flex items-center px-2.5 py-1 md:px-3 md:py-1.5 text-sm md:text-base text-emerald-800 font-medium hover:text-emerald-700 hover:bg-white rounded-lg transition-colors whitespace-nowrap border border-emerald-200 shadow-sm"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1 md:mr-2 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              Buy Again
+              <span className="hidden sm:inline">Buy Again</span>
             </Link>
             <Link
               href="/gift-options"
-              className="flex items-center px-3 py-1.5 text-emerald-800 font-medium hover:text-emerald-700 hover:bg-white rounded-lg transition-colors whitespace-nowrap border border-emerald-200 shadow-sm"
+              className="flex-shrink-0 flex items-center px-2.5 py-1 md:px-3 md:py-1.5 text-sm md:text-base text-emerald-800 font-medium hover:text-emerald-700 hover:bg-white rounded-lg transition-colors whitespace-nowrap border border-emerald-200 shadow-sm"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1 md:mr-2 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
               </svg>
-              Gift Options
+              <span className="hidden sm:inline">Gift Options</span>
             </Link>
           </div>
         </div>
       </motion.div>
 
       {/* Spacer to prevent content from being hidden under fixed navbar */}
-      <div className="h-28 md:h-32"></div>
+      <div className="h-20 md:h-32"></div>
+
+      <style jsx>{`
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   );
 }
