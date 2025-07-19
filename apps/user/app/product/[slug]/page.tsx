@@ -10,9 +10,9 @@ import prisma from "@repo/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import ImageGallery from "./ImageGallery";
-import Image from "next/image";
+// import Image from "next/image";
 import ProductTabs from "./ProductTabs";
-import RelatedProducts from "./RealatedProducts";
+// import RelatedProducts from "./RealatedProducts";
 import AddToCart from "./AddCart";
 import SizeSelector from "./sizeSelector"; // New component
 
@@ -253,7 +253,7 @@ export default async function ProductPage({
       />
 
       {/* Related Products */}
-      <RelatedProducts products={relatedProducts} currentProduct={product} />
+      {/* <RelatedProducts products={relatedProducts} currentProduct={product} /> */}
     </div>
   );
 }
