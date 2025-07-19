@@ -481,7 +481,7 @@ export default function Navbar() {
           opacity: showCategories ? 1 : 0
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className={`fixed top-14 md:top-20 w-full bg-gradient-to-r from-emerald-50 to-green-50 z-40 shadow-sm border-b border-emerald-100`}
+        className={`fixed top-14 md:top-20 w-full bg-gradient-to-r from-emerald-50 to-green-50 z-40 shadow-sm border-b border-emerald-100 overflow-visible`}
       >
         <div className="container mx-auto px-3 md:px-4 py-2">
           <div className="flex overflow-x-auto pb-1 md:pb-0 space-x-2 md:space-x-4 hide-scrollbar">
@@ -512,7 +512,7 @@ export default function Navbar() {
                 <AnimatePresence>
                   {activeCategory === index && (
                     <motion.div
-                      className="hidden md:block absolute top-full left-0 w-64 bg-white border border-emerald-100 rounded-lg shadow-lg z-50"
+                      className="hidden md:block absolute top-full left-0 mt-1 w-64 bg-white border border-emerald-100 rounded-lg shadow-lg z-50"
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
@@ -529,56 +529,6 @@ export default function Navbar() {
                             {sub}
                           </Link>
                         ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Mobile Dropdown - integrated with each category */}
-                <AnimatePresence>
-                  {activeCategory === index && (
-                    <motion.div
-                      className="md:hidden fixed left-0 top-14 w-full bg-white border-t border-emerald-100 shadow-lg z-50"
-                      initial={{ y: -20, opacity: 0 }}
-                      animate={{ y: 0, opacity: 1 }}
-                      exit={{ y: -20, opacity: 0 }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div className="container mx-auto py-3 max-h-[60vh] overflow-y-auto">
-                        <div className="flex justify-between items-center px-4 pb-2">
-                          <h3 className="font-bold text-emerald-800">{category.name}</h3>
-                          <button
-                            onClick={() => setActiveCategory(null)}
-                            className="p-1 text-emerald-700"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-6 w-6"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 px-2">
-                          {category.subcategories.map((sub, subIndex) => (
-                            <Link
-                              key={subIndex}
-                              href={`/category/${sub.toLowerCase().replace(/\s+/g, '-')}`}
-                              className="block px-3 py-2 text-sm text-emerald-700 hover:bg-emerald-50 rounded-lg"
-                              onClick={() => setActiveCategory(null)}
-                            >
-                              {sub}
-                            </Link>
-                          ))}
-                        </div>
                       </div>
                     </motion.div>
                   )}
@@ -608,9 +558,9 @@ export default function Navbar() {
         </div>
       </motion.div>
 
-      {/* Mobile Dropdown (separate from desktop) */}
+      {/* Mobile Dropdown - Only rendered for mobile */}
       <AnimatePresence>
-        {typeof activeCategory === 'number' && (
+        {(activeCategory !== null) && (
           <motion.div
             className="md:hidden fixed left-0 top-14 w-full bg-white border-t border-emerald-100 shadow-lg z-50"
             initial={{ y: -20, opacity: 0 }}
