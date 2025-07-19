@@ -35,16 +35,9 @@ export default function Testimonials() {
                 loved the Tulsi and indoor bamboo — perfect gift!"
               </p>
               <div className="flex items-center">
-                <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
-                  <Image
-                    alt="boy"
-                    src="/boy.avif"
-                    height={48}
-                    width={48}
-                    className="object-cover w-full h-full"
-                  />
+                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mr-4">
+                  <span className="text-green-800 font-bold text-xl">KR</span>
                 </div>
-
                 <div>
                   <h4 className="font-bold text-green-900">Karthik Reddy</h4>
                   <p className="text-green-700">Vijayawada, AP</p>
@@ -73,15 +66,8 @@ export default function Testimonials() {
                 within 2 days. Namma Bengaluru plants are now looking better!"
               </p>
               <div className="flex items-center">
-                {/* <div className="w-12 h-12 bg-emerald-200 rounded-full mr-4"></div> */}
-                      <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
-                  <Image
-                    alt="boy"
-                    src="/ka.avif"
-                    height={48}
-                    width={52}
-                    className="object-cover pl-1 h-full "
-                  />
+                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mr-4">
+                  <span className="text-green-800 font-bold text-xl">SN</span>
                 </div>
                 <div>
                   <h4 className="font-bold text-green-900">Shruthi N.</h4>
@@ -107,19 +93,12 @@ export default function Testimonials() {
               </div>
               <p className="text-green-800 mb-6">
                 "These guys are serious about greenery. From eco-friendly
-                packaging to detailed plant care guides, I’ve never felt more
+                packaging to detailed plant care guides, I've never felt more
                 confident bringing home new plants."
               </p>
               <div className="flex items-center">
-                {/* <div className="w-12 h-12 bg-emerald-200 rounded-full mr-4"></div> */}
-                     <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
-                  <Image
-                    alt="boy"
-                    src="/rithika.avif"
-                    height={48}
-                    width={52}
-                    className="object-cover "
-                  />
+                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center mr-4">
+                  <span className="text-green-800 font-bold text-xl">RM</span>
                 </div>
                 <div>
                   <h4 className="font-bold text-green-900">Ritika Mehta</h4>

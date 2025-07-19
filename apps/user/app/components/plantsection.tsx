@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { useRouter } from 'next/navigation';
 
 export default function PlantSection() {
   const featuredProducts = [
@@ -54,6 +55,7 @@ export default function PlantSection() {
     },
   ];
 
+  const router = useRouter();
   return (
     <section>
       {/* Categories Section */}
@@ -65,7 +67,7 @@ export default function PlantSection() {
             </h2>
             <p className="text-green-700 max-w-lg mx-auto">
               Explore our diverse collection of plants curated for every space
-              and lifestyle.
+              and .
             </p>
           </div>
 
@@ -73,6 +75,8 @@ export default function PlantSection() {
             {categories.map((category) => (
               <div
                 key={category.id}
+
+                onClick={() => router.push('/categories')}
                 className="group relative overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition duration-300"
               >
                 <Image
