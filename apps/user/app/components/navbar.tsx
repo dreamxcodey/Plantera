@@ -169,8 +169,8 @@ export default function Navbar() {
       {/* Main Navbar */}
       <motion.header
         className={`fixed w-full z-50 transition-all duration-300 ${isScrolled
-            ? "bg-gradient-to-r from-green-100 to-emerald-50 shadow-lg py-1 md:py-2"
-            : "bg-gradient-to-b from-green-200 to-emerald-100 backdrop-blur-sm py-2 md:py-3"
+          ? "bg-gradient-to-r from-green-100 to-emerald-50 shadow-lg py-1 md:py-2"
+          : "bg-gradient-to-b from-green-200 to-emerald-100 backdrop-blur-sm py-2 md:py-3"
           }`}
       >
         <div className="container mx-auto px-3 md:px-4 flex justify-between items-center">
@@ -436,8 +436,8 @@ export default function Navbar() {
                       key={item.path}
                       href={item.path}
                       className={`block px-6 py-3 text-lg ${pathname === item.path
-                          ? "text-emerald-700 bg-emerald-50 font-semibold"
-                          : "text-green-800 hover:bg-emerald-50"
+                        ? "text-emerald-700 bg-emerald-50 font-semibold"
+                        : "text-green-800 hover:bg-emerald-50"
                         }`}
                       onClick={() => setIsMenuOpen(false)}
                     >
@@ -481,15 +481,19 @@ export default function Navbar() {
           opacity: showCategories ? 1 : 0
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className={`fixed top-14 md:top-20 w-full bg-gradient-to-r from-emerald-50 to-green-50 z-40 shadow-sm border-b border-emerald-100`}
+        className={`fixed top-14 md:top-20 w-full bg-gradient-to-r from-emerald-50 to-green-50 z-40 shadow-sm border-b border-emerald-100 overflow-visible`}
       >
         <div className="container mx-auto px-3 md:px-4 py-2">
           <div className="flex overflow-x-auto pb-1 md:pb-0 space-x-2 md:space-x-4 hide-scrollbar">
             {mainCategories.map((category, index) => (
-              <div key={index} className="flex-shrink-0 group relative">
+              <div key={index} className="flex-shrink-0 relative">
+                {/* Category Button */}
                 <button
                   className="flex items-center px-2.5 py-1 md:px-3 md:py-1.5 text-sm md:text-base text-emerald-800 font-medium hover:text-emerald-700 hover:bg-white rounded-lg transition-colors whitespace-nowrap border border-emerald-200 shadow-sm"
-                  onClick={() => setActiveCategory(activeCategory === index ? null : index)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveCategory(activeCategory === index ? null : index);
+                  }}
                 >
                   {category.icon}
                   <span className="hidden sm:inline">{category.name}</span>
@@ -504,75 +508,34 @@ export default function Navbar() {
                   </svg>
                 </button>
 
-                {/* Mobile dropdown - Full width */}
-                {activeCategory === index && (
-                  <motion.div
-                    className="md:hidden fixed left-0 top-14 w-full bg-white border-t border-emerald-100 shadow-lg z-50"
-                    initial={{ y: -20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                  >
-                    <div className="container mx-auto py-3 max-h-[60vh] overflow-y-auto">
-                      <div className="flex justify-between items-center px-4 pb-2">
-                        <h3 className="font-bold text-emerald-800">{category.name}</h3>
-                        <button
-                          onClick={() => setActiveCategory(null)}
-                          className="p-1 text-emerald-700"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-6 w-6"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 px-2">
+                {/* Desktop Dropdown */}
+                <AnimatePresence>
+                  {activeCategory === index && (
+                    <motion.div
+                      className="hidden md:block absolute top-full left-0 mt-1 w-64 bg-white border border-emerald-100 rounded-lg shadow-lg z-50"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="py-2 max-h-80 overflow-y-auto">
                         {category.subcategories.map((sub, subIndex) => (
                           <Link
                             key={subIndex}
                             href={`/category/${sub.toLowerCase().replace(/\s+/g, '-')}`}
-                            className="block px-3 py-2 text-sm text-emerald-700 hover:bg-emerald-50 rounded-lg"
+                            className="block px-4 py-2 text-sm text-emerald-700 hover:bg-emerald-50 hover:text-emerald-900 transition-colors"
                             onClick={() => setActiveCategory(null)}
                           >
                             {sub}
                           </Link>
                         ))}
                       </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {/* Desktop dropdown */}
-                {activeCategory === index && (
-                  <motion.div
-                    className="hidden md:block absolute left-0 mt-1 w-64 bg-white border border-emerald-100 rounded-lg shadow-lg z-50"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                  >
-                    <div className="py-2 max-h-80 overflow-y-auto">
-                      {category.subcategories.map((sub, subIndex) => (
-                        <Link
-                          key={subIndex}
-                          href={`/category/${sub.toLowerCase().replace(/\s+/g, '-')}`}
-                          className="block px-4 py-2 text-sm text-emerald-700 hover:bg-emerald-50 hover:text-emerald-900 transition-colors"
-                          onClick={() => setActiveCategory(null)}
-                        >
-                          {sub}
-                        </Link>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             ))}
+
             <Link
               href="/buy-again"
               className="flex-shrink-0 flex items-center px-2.5 py-1 md:px-3 md:py-1.5 text-sm md:text-base text-emerald-800 font-medium hover:text-emerald-700 hover:bg-white rounded-lg transition-colors whitespace-nowrap border border-emerald-200 shadow-sm"
@@ -594,6 +557,56 @@ export default function Navbar() {
           </div>
         </div>
       </motion.div>
+
+      {/* Mobile Dropdown - Only rendered for mobile */}
+      <AnimatePresence>
+        {(activeCategory !== null) && (
+          <motion.div
+            className="md:hidden fixed left-0 top-14 w-full bg-white border-t border-emerald-100 shadow-lg z-50"
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -20, opacity: 0 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="container mx-auto py-3 max-h-[60vh] overflow-y-auto">
+              <div className="flex justify-between items-center px-4 pb-2">
+                <h3 className="font-bold text-emerald-800">{mainCategories[activeCategory]?.name}</h3>
+                <button
+                  onClick={() => setActiveCategory(null)}
+                  className="p-1 text-emerald-700"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2 px-2">
+                {mainCategories[activeCategory]?.subcategories.map((sub, subIndex) => (
+                  <Link
+                    key={subIndex}
+                    href={`/category/${sub.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="block px-3 py-2 text-sm text-emerald-700 hover:bg-emerald-50 rounded-lg"
+                    onClick={() => setActiveCategory(null)}
+                  >
+                    {sub}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Spacer to prevent content from being hidden under fixed navbar */}
       <div className="h-20 md:h-32"></div>
