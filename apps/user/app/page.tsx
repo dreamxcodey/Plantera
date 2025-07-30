@@ -8,8 +8,6 @@ import ProductCard from "./components/ProductCard";
 import Testimonials from "./components/testimonals";
 
 export default function Home() {
-
-
   return (
     <div className="min-h-screen bg-[#F9FBF7]">
       {/* <Navbar /> */}
@@ -116,30 +114,33 @@ export default function Home() {
       {/* Newsletter */}
       <section className="py-16 bg-emerald-600">
         <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">
+          <div className="max-w-2xl mx-auto text-center">
+            <h2 className="text-4xl font-bold text-white mb-4">
               Join Our Green Community
             </h2>
-            <p className="text-emerald-100 mb-8">
-              Subscribe to our newsletter for plant care tips, exclusive offers,
-              and new arrivals.
+            <p className="text-emerald-100 mb-8 text-lg">
+              Subscribe for plant care tips, exclusive offers, and new arrivals
+              — straight to your inbox.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4">
+            <form className="flex flex-col sm:flex-row items-center gap-4">
               <input
                 type="email"
-                placeholder="Your email address"
-                className="flex-grow px-6 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-emerald-300"
+                placeholder="Enter your email"
+                className="w-full sm:flex-1 px-6 py-3 rounded-full text-sm focus:outline-none focus:ring-2 ring-emerald-300 placeholder:text-emerald-400"
               />
-              <button className="px-8 py-3 bg-green-800 text-white rounded-full font-medium hover:bg-green-900 transition duration-300 whitespace-nowrap">
+              <button
+                type="submit"
+                className="px-8 py-3 bg-green-800 text-white rounded-full font-semibold hover:bg-green-900 transition-all duration-300"
+              >
                 Subscribe
               </button>
-            </div>
+            </form>
           </div>
         </div>
       </section>
 
-<Footer/>
+      <Footer />
     </div>
   );
 }

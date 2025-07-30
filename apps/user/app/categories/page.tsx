@@ -61,72 +61,72 @@ export default async function CategoriesPage(
   // Fetch brands for filters
 
   return (
-    <div className="max-w-7xl pt-10 mx-auto">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-green-800 mb-2">Plant Categories</h1>
-        <p className="text-gray-600">
-          Explore our wide variety of plant categories and find the perfect plants for your home
-        </p>
-      </div>
+<div className="max-w-7xl mx-auto pt-10 px-4">
+  {/* Header */}
+  <div className="mb-8 text-center lg:text-left">
+    <h1 className="text-3xl font-bold text-green-800 mb-2">Plant Categories</h1>
+    <p className="text-gray-600">
+      Explore our wide variety of plant categories and find the perfect plants for your home
+    </p>
+  </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-        {/* Sidebar */}
-        <div className="lg:col-span-1">
-          <FilterSidebar
-            filterOptions={{
-              categories: categories.map(c => ({
-                id: c.id,
-                name: c.name,
-                slug: c.slug,
-                count: c._count.products,
-              })),
-              brands: brands.map(b => ({
-                id: b.id,
-                name: b.name,
-                slug: b.slug,
-              })),
-              tags: uniqueTags,
-              priceRange,
-            }}
-            searchParams={searchParams}
-          />
-        </div>
-
-        {/* Main Content */}
-        <div className="lg:col-span-3">
-          {/* Categories Grid */}
-          <section className="mb-12">
-            <h2 className="text-2xl font-semibold text-green-800 mb-6">Browse Categories</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {categories.map(category => (
-                <CategoryCard
-                  key={category.id}
-                  category={{
-                    ...category,
-                    products: category._count.products
-                  }}
-                />
-              ))}
-            </div>
-          </section>
-
-          {/* All Plants Section */}
-          <section>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold text-green-800">All Plants</h2>
-              <div className="text-sm text-emerald-600">
-                Showing {allProducts.length} plants
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {allProducts.map(product => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          </section>
-        </div>
-      </div>
+  {/* Grid: Sidebar + Main */}
+  <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    {/* Sidebar */}
+    <div className="lg:col-span-1">
+      <FilterSidebar
+        filterOptions={{
+          categories: categories.map(c => ({
+            id: c.id,
+            name: c.name,
+            slug: c.slug,
+            count: c._count.products,
+          })),
+          brands: brands.map(b => ({
+            id: b.id,
+            name: b.name,
+            slug: b.slug,
+          })),
+          tags: uniqueTags,
+          priceRange,
+        }}
+        searchParams={searchParams}
+      />
     </div>
+
+    {/* Main Content */}
+    <div className="lg:col-span-3">
+      {/* Categories */}
+      <section className="mb-12">
+        <h2 className="text-2xl font-semibold text-green-800 mb-6">Browse Categories</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {categories.map(category => (
+            <CategoryCard
+              key={category.id}
+              category={{ ...category, products: category._count.products }}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* All Plants */}
+      <section>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-2 sm:gap-0">
+          <h2 className="text-2xl font-semibold text-green-800">All Plants</h2>
+          <div className="text-sm text-emerald-600">
+            Showing {allProducts.length} plants
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {allProducts.map(product => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
   );
 }
