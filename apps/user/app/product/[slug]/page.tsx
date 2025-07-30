@@ -1,11 +1,4 @@
-import {
-  Star,
-  ShoppingCart,
-  Package,
-  ShieldCheck,
-  Truck,
-  Heart,
-} from "lucide-react";
+import { Star, Package, ShieldCheck, Truck } from "lucide-react";
 import prisma from "@repo/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -75,27 +68,18 @@ export default async function ProductPage({
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 bg-gradient-to-r from-green-50 to-emerald-50">
-      {/* Breadcrumbs */}
-      <div className="text-sm text-gray-500 mb-6 flex items-center">
-        <Link href="/" className="hover:text-green-600 transition-colors">
-          Home
-        </Link>
-        <span className="mx-2">/</span>
-        <Link
-          href={`/categories/${product.category.slug}`}
-          className="hover:text-green-600 transition-colors"
-        >
+       <div className="text-sm text-gray-500 mb-6 flex flex-wrap items-center gap-x-1 gap-y-2 sm:gap-x-2">
+        <Link href="/" className="hover:text-green-600 transition-colors">Home</Link>
+        <span className="text-gray-400">/</span>
+        <Link href={`/categories/${product.category.slug}`} className="hover:text-green-600 transition-colors">
           {product.category.name}
         </Link>
-        <span className="mx-2">/</span>
-        <Link
-          href={`/categories/${product.category.slug}/${product.subcategory.slug}`}
-          className="hover:text-green-600 transition-colors"
-        >
+        <span className="text-gray-400">/</span>
+        <Link href={`/categories/${product.category.slug}/${product.subcategory.slug}`} className="hover:text-green-600 transition-colors">
           {product.subcategory.name}
         </Link>
-        <span className="mx-2">/</span>
-        <span className="text-gray-900 font-medium truncate max-w-xs">
+        <span className="text-gray-400">/</span>
+        <span className="text-gray-900 font-medium truncate max-w-[150px] sm:max-w-[250px]">
           {product.name}
         </span>
       </div>
