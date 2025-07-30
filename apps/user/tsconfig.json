@@ -13,6 +13,6 @@
     "next-env.d.ts",
     "next.config.ts",
     ".next/types/**/*.ts"
-  ],
+, "app/components/ProductCard.tsx"  ],
   "exclude": ["node_modules"]
 }

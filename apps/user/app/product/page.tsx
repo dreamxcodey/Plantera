@@ -57,8 +57,8 @@ export default async function CategoriesPage(
       createdAt: 'desc'
     }
   });
+  // console.log("All products:", allProducts);
 
-  // Fetch brands for filters
 
   return (
     <div className="max-w-7xl pt-10 mx-auto">

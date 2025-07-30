@@ -512,9 +512,9 @@ export default function Navbar() {
                 <AnimatePresence>
                   {activeCategory === index && (
                     <motion.div
-                      className="hidden md:block absolute top-full left-0 mt-1 w-64 bg-white border border-emerald-100 rounded-lg shadow-lg z-50"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
+                      className="hidden md:block absolute top-full left-0 mt-1 w-64 bg-white border border-emerald-100 rounded-lg shadow-lg "
+                      initial={{ opacity: 0, y: 100 }}
+                      animate={{ opacity: 10, y: 0 }}
                       exit={{ opacity: 0, y: 10 }}
                       onClick={(e) => e.stopPropagation()}
                     >

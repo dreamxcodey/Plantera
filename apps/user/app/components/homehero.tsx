@@ -31,7 +31,7 @@ export default function HomeHero() {
                 className="px-8 py-3 bg-emerald-600 text-white rounded-full font-medium hover:bg-emerald-700 transition duration-300 shadow-lg hover:shadow-emerald-200">
                 Shop Plants
               </button>
-              <button className="px-8 py-3 bg-white text-emerald-600 border border-emerald-600 rounded-full font-medium hover:bg-emerald-50 transition duration-300">
+              <button onClick={()=>router.push('/categories')} className="px-8 py-3 bg-white text-emerald-600 border border-emerald-600 rounded-full font-medium hover:bg-emerald-50 transition duration-300">
                 Learn More
               </button>
             </div>
