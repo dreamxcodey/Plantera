@@ -15,6 +15,7 @@ import ProductTabs from "./ProductTabs";
 // import RelatedProducts from "./RealatedProducts";
 import AddToCart from "./AddCart";
 import SizeSelector from "./sizeSelector"; // New component
+import RelatedProducts from "./RealatedProducts";
 
 export default async function ProductPage({
   params,
@@ -28,8 +29,8 @@ export default async function ProductPage({
     include: {
       sizes: {
         orderBy: {
-          price: 'asc'
-        }
+          price: "asc",
+        },
       },
       category: true,
       subcategory: true,
@@ -48,23 +49,27 @@ export default async function ProductPage({
     ? parseInt(searchParams.size)
     : product.sizes[0]?.id;
 
-  const selectedSize = product.sizes.find(size => size.id === selectedSizeId) || product.sizes[0];
+  const selectedSize =
+    product.sizes.find((size) => size.id === selectedSizeId) ||
+    product.sizes[0];
 
   const avgRating =
     product.reviews.length > 0
       ? product.reviews.reduce((acc, review) => acc + review.rating, 0) /
-      product.reviews.length
+        product.reviews.length
       : 0;
 
   const relatedProducts = await prisma.product.findMany({
     where: {
-      categoryId: product.categoryId,
-      NOT: { id: product.id },
+      id: { not: product.id },
+      tags: {
+        hasSome: product.tags,
+      },
     },
     take: 4,
     include: {
       sizes: true,
-      brand: true
+      brand: true,
     },
   });
 
@@ -158,9 +163,8 @@ export default async function ProductPage({
                       ₹{product.mrp.toFixed(2)}
                     </span>
                     <span className="text-green-600 font-medium">
-                      {Math.round(
-                        (1 - selectedSize.price / product.mrp) * 100
-                      )}% off
+                      {Math.round((1 - selectedSize.price / product.mrp) * 100)}
+                      % off
                     </span>
                   </>
                 )}
@@ -253,7 +257,7 @@ export default async function ProductPage({
       />
 
       {/* Related Products */}
-      {/* <RelatedProducts products={relatedProducts} currentProduct={product} /> */}
+      <RelatedProducts products={relatedProducts} currentProduct={product} />
     </div>
   );
 }
