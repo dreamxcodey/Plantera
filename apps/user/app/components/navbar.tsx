@@ -477,16 +477,17 @@ export default function Navbar() {
       {/* Categories Bar */}
       <motion.div
         animate={{
-          y: showCategories ? 0 : -100,
-          opacity: showCategories ? 1 : 0
+          y: showCategories ? 0 : 1,
+          opacity: showCategories ? 1 : 1
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className={`fixed top-14 md:top-20 w-full bg-gradient-to-r from-emerald-50 to-green-50 z-40 shadow-sm border-b border-emerald-100 overflow-visible`}
+        className={`fixed top-14 md:top-20 w-full bg-gradient-to-r from-emerald-50 to-green-50 z-40 shadow-sm border-b border-emerald-100`}
       >
         <div className="container mx-auto px-3 md:px-4 py-2">
           <div className="flex overflow-x-auto pb-1 md:pb-0 space-x-2 md:space-x-4 hide-scrollbar">
             {mainCategories.map((category, index) => (
-              <div key={index} className="flex-shrink-0 relative">
+              <div key={index} className="flex-shrink-0 ">
+
                 {/* Category Button */}
                 <button
                   className="flex items-center px-2.5 py-1 md:px-3 md:py-1.5 text-sm md:text-base text-emerald-800 font-medium hover:text-emerald-700 hover:bg-white rounded-lg transition-colors whitespace-nowrap border border-emerald-200 shadow-sm"
@@ -510,15 +511,15 @@ export default function Navbar() {
 
                 {/* Desktop Dropdown */}
                 <AnimatePresence>
-                  {activeCategory === index && (
+                  {activeCategory == index && (
                     <motion.div
-                      className="hidden md:block absolute top-full left-0 mt-1 w-64 bg-white border border-emerald-100 rounded-lg shadow-lg "
-                      initial={{ opacity: 0, y: 100 }}
-                      animate={{ opacity: 10, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
+                      className="hidden md:block  absolute top-full  mt-1 w-64 bg-white border border-emerald-100 rounded-lg shadow-lg z-250"
+                      initial={{ y: -20, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: 1, opacity: 0 }}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <div className="py-2 max-h-80 overflow-y-auto">
+                      <div className="py-2  ">
                         {category.subcategories.map((sub, subIndex) => (
                           <Link
                             key={subIndex}
@@ -562,7 +563,7 @@ export default function Navbar() {
       <AnimatePresence>
         {(activeCategory !== null) && (
           <motion.div
-            className="md:hidden fixed left-0 top-14 w-full bg-white border-t border-emerald-100 shadow-lg z-50"
+            className="md:hidden fixed inset-0 top-14 w-full bg-white border-t border-emerald-100 shadow-lg z-50"
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: -20, opacity: 0 }}
