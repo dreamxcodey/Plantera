@@ -4,7 +4,7 @@ export default function HomeHero() {
   const router = useRouter();
   return (
 
-    <section className="relative pt-24 pb-16 md:pt-32 md:pb-24 overflow-hidden">
+    <section className="relative pt-24 pb-16 md:pt-28 md:pb-24 overflow-hidden">
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-r from-green-50 to-emerald-50"></div>
         <div className="absolute top-20 right-0 w-2/3 h-96 bg-green-200 rounded-l-full opacity-20"></div>
@@ -31,7 +31,7 @@ export default function HomeHero() {
                 className="px-8 py-3 bg-emerald-600 text-white rounded-full font-medium hover:bg-emerald-700 transition duration-300 shadow-lg hover:shadow-emerald-200">
                 Shop Plants
               </button>
-              <button onClick={()=>router.push('/categories')} className="px-8 py-3 bg-white text-emerald-600 border border-emerald-600 rounded-full font-medium hover:bg-emerald-50 transition duration-300">
+              <button onClick={() => router.push('/categories')} className="px-8 py-3 bg-white text-emerald-600 border border-emerald-600 rounded-full font-medium hover:bg-emerald-50 transition duration-300">
                 Learn More
               </button>
             </div>

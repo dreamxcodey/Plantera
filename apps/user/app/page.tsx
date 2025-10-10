@@ -1,17 +1,13 @@
 "use client";
-
 import Footer from "./components/footer";
 import HomeHero from "./components/homehero";
-// import Navbar from "./components/navbar";
 import PlantSection from "./components/plantsection";
-import ProductCard from "./components/ProductCard";
-import Testimonials from "./components/testimonals";
+// import ProductCard from "./components/ProductCard";
+// import Testimonials from "./components/testimonals";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-[#F9FBF7]">
-      {/* <Navbar /> */}
-
       <HomeHero />
       <PlantSection />
 
@@ -110,7 +106,7 @@ export default function Home() {
         </div>
       </section>
 
-      <Testimonials />
+      {/* <Testimonials /> */}
       {/* Newsletter */}
       <section className="py-16 bg-emerald-600">
         <div className="container mx-auto px-4">

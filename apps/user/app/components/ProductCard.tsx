@@ -12,10 +12,11 @@ export default function ProductCard({ product }: { product: any }) {
   const totalStock = product.sizes?.reduce((sum: number, size: any) => sum + (size.stock || 0), 0) ?? product.stock;
 
   return (
-    <div
+    <Link
       className="w-full bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-green-50 flex flex-col"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      href={`/product/${product.slug}`}
     >
       {/* Image container with fixed aspect ratio */}
       <div className="relative overflow-hidden aspect-square">
@@ -102,6 +103,6 @@ export default function ProductCard({ product }: { product: any }) {
           View Details
         </Link>
       </div>
-    </div>
+    </Link>
   );
 }

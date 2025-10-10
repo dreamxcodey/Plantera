@@ -1,5 +1,4 @@
 "use client";
-import Navbar from "./componets/navbar";
 import { useRouter } from "next/navigation";
 
 export default function Page() {
@@ -7,7 +6,6 @@ export default function Page() {
 
   return (
     <div className="bg-[#F9FBF7] min-h-screen flex flex-col">
-      {/* <Navbar /> */}
       {/* Add top margin or padding to push content below navbar */}
       <div className="mt-16 px-4 flex items-center justify-center">
         <button

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import prisma from '@repo/db'
-import { log } from 'console'
 
 export async function GET() {
   try {
